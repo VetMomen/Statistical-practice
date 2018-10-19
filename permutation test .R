@@ -17,6 +17,6 @@ perm_diffr<-rep(0,1000)
 for(i in 1:1000){
         perm_diffr[i]<-perm_test(x = data,n1 = 23593,n2 = 22406)
 }
-obs_pct_diff<-100*(200/23739 - 182/22588)
+obs_pct_diff<-(200/23739 - 182/22588)
 hist(perm_diffr)
 abline(v = obs_pct_diff)
