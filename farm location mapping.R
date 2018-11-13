@@ -1,0 +1,2 @@
+farms%>%leaflet()%>%addProviderTiles(provider = 'CartoDB.DarkMatter')%>%addAwesomeMarkers(label = farms$Name,labelOptions = list(permanent = T),
+                                                                                          clusterOptions = markerClusterOptions())
