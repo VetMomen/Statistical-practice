@@ -1,0 +1,284 @@
+---
+title: "clustering step by step"
+author: "Mo'men Mohamed"
+date: "December 16, 2018"
+output: html_document
+---
+
+```{r libraries loading}
+library(magrittr)
+```
+
+## This tutorial aim
+This tutorial aims to illustrate all steps and process to do a three types of clustering 
+
+1- K-means clustering 
+
+2- Hierarchical clustering 
+
+3- DBSCAN Clustering 
+
+## The Overall steps 
+Our steps are rounded to a specified steps :
+
+1- measuring the tendency of the data to clustering 
+
+2- identifying the optimum number of clusters 
+
+3- measuring the Validity of current model 
+
+##Data description 
+
+We will work with *iris* data from **datasets** package 
+
+```{r loading data sets,cache=TRUE}
+data("iris")
+```
+
+this data have a dimension of **`r dim(iris)`** 
+
+lets explore its structure 
+
+```{r data structure,cache=TRUE}
+str(iris)
+```
+
+we can see that the data contains 4 variables represent four dimension for clustering
+
+we can examine it in depth and see its summary 
+
+```{r variables sammary,cache=TRUE}
+summary(iris[,c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width")])
+```
+
+OK! the data doesn't contains any Na's
+
+So, lets start our first step:
+
+## measuring the tendency to clustring 
+
+We Will use a Hopkins Statistic from *clusterend* package 
+
+```{r clusterend loading}
+library(clustertend)
+```
+
+Now let's calculate it on the Original data:
+
+```{r hopkins calculation,cache=TRUE}
+hopkins(data = iris[,c("Sepal.Length","Sepal.Width","Petal.Length","Petal.Width")],n = nrow(iris)-1)%>%print()
+```
+
+Hopkins statistics is close to **Zero** and it means that the data is significantly clustered 
+
+And to see the difference between cluster-able and not cluster-able data lets make a simulation and building a random data frame 
+
+```{r random data frame,cache=TRUE}
+set.seed(123)
+x<-runif(n = nrow(iris),min = min(iris$Sepal.Length),max = max(iris$Sepal.Length))
+y<-runif(n = nrow(iris),min = min(iris$Sepal.Width),max=max(iris$Sepal.Width))
+w<-runif(n = nrow(iris),min = min(iris$Petal.Length),max=max(iris$Petal.Length))
+z<-runif(n = nrow(iris),min = min(iris$Petal.Width),max=max(iris$Petal.Width))
+
+random_df<-data.frame(x,y,w,z)
+```
+
+```{r saving random data,cache=TRUE}
+saveRDS(object = random_df,file = './data sets/random.rds')
+```
+
+Now lets calculate the Hopkins statistic on random data doesn't have the clustering tendency 
+
+```{r hopkins of random data,cache=TRUE}
+hopkins(data = random_df,n = nrow(random_df)-1)%>%print()
+```
+
+see ! 
+
+the random data takes a larger statistic than the original data which is close to zero 
+
+for more about **Hopkin's statistic** see this [tutorial](http://www.sthda.com/english/wiki/print.php?id=238)
+
+## Knowing the Optimum number of clusters
+
+### Kmeans clustering 
+
+to know that there are two ways 
+- Analyzing the total within SS error 
+- silhouette index
+
+let's analyse the gap between total within SS error of each number of clusters 
+
+```{r tot.within,cache=TRUE}
+tot_within<-list()
+
+for(i in 1:50){
+        km<-kmeans(x = iris[,1:4],centers = i,nstart = 25)
+        tot_within[[i]]<-km$tot.withinss
+}
+
+```
+
+Now let us plot the tot.withinss against number of clusters 
+
+```{r plotting the tot.within,cache=TRUE}
+y=unlist(tot_within)
+x=1:50
+plot(x = x,y=y)
+abline(v = 3.5)
+```
+
+from the plot we can see that the minimum difference in total within SS error achieved at 3 clusters 
+
+and we can conclude that the data has 3 clusters 
+
+but why not to try another parameter which is **silhouette index** to make confirm 
+
+```{r data prepair,cache=TRUE}
+scaled_iris<-scale(x = iris[,1:4])
+
+dist_iris<-dist(scaled_iris)
+
+```
+
+Now we can calculate the silhouette index using ***cluster*** package 
+
+```{r library load}
+library(cluster)
+
+```
+
+And calculate the index
+
+```{r silhoutte index,cache=TRUE}
+avg_sil<-list()
+for(i in 2:60){
+        km<-kmeans(x = iris[,1:4],centers = i,nstart = 25)
+        sil<-silhouette(x = km$cluster,dist = dist_iris)
+        sil_summary<-summary(sil)
+        avg_sil[[i]]<-sil_summary$avg.width
+}
+
+```
+
+and then plot the sil_summary 
+
+```{r ploting sil summary,cache=TRUE}
+
+x=2:60
+y=unlist(avg_sil)
+plot(x=x,y=y)
+lines(x,y)
+abline(v = 2.5)
+```
+
+from the plot we can see that the highest silhouette index achieved at 2 clusters 
+
+for more about silhouette index concept see [wikipedia](https://en.wikipedia.org/wiki/Silhouette_(clustering))
+
+OK but which number of cluster we will take ? 
+
+
+OK lets make tricky thing 
+
+lets compare the predefined cluster introduced by the data and the clusters we introduce !!
+
+```{r 3 Vs predefined ,cache=TRUE}
+km<-kmeans(x = iris[,1:4],centers = 3,nstart = 25)
+
+iris$clusters<-km$cluster
+
+table(iris$cluster,iris$Species)
+```
+
+```{r 2 Vs predefined,cache=TRUE}
+km<-kmeans(x = iris[,1:4],centers = 2,nstart = 25)
+
+iris$clusters<-km$cluster
+
+table(iris$cluster,iris$Species)
+```
+
+Form the two comparison we can see that *versicolor & virginica* have a great share in cluster "1" 
+
+So it is better to divide it into two clusters !!!
+
+Finally , we can assure the validation of our decision Visually through **ordered dissimilarity image **
+
+**Note** : we can use it also to assess cluster tendency ( ** visual assessment of cluster tendency (VAT)**)
+
+we will use *seriation* package 
+
+```{r seriation load}
+library(seriation)
+
+```
+
+Now we Can do this by *dissplot()*
+
+```{r VAT,cache=TRUE}
+dissplot(x = dist_iris)
+```
+
+From this plot we can see that the data has a tendency to clustering with a valid 2 cluster ...
+
+####Note that the conflict between the optimum number of clusters may be due to the method of clustering it self, as Kmeans is a technique which aim to devide the data set to non overlabing clusters (*partitional clustring*) the thing which is not accurate here as it may be a nested cluster under other one ** Heirarchical Clusters**
+
+
+### Heirarchical clustering
+
+Knowing the optimum number of clusters in H-clustering is somewhat similar to Kmeans as we can use sillhouette index like the following 
+
+```{r h-clustering ,cache=TRUE}
+hc<-hclust(d = dist_iris,method = 'average')
+
+
+```
+
+```{r plotting the tree,cache=TRUE}
+plot(hc)
+rect.hclust(tree = hc,k = 6,which = c(3,5,6),border = 2:5)
+```
+
+```{r cutting silhoueete index , cache=TRUE}
+avg_sil<-list()
+for(i in 2:60){
+        cutted<-cutree(tree = hc,k = i)
+        sil<-silhouette(x = cutted,dist = dist_iris)
+        sil_summary<-summary(sil)
+        avg_sil[[i]]<-sil_summary$avg.width
+}
+
+```
+
+```{r plotting silhouette ,cache=TRUE}
+x=2:60
+y=unlist(avg_sil)
+
+plot(x=x,y=y)
+lines(x=x,y=y)
+
+```
+
+See !! there are agreement between the two type of clustering on 2 clusters 
+
+Regarding to H-clustering there are a method used to determined the best method of clustering (**"single"**,**"complete"**,**"average"**) called cophenetics correlation coefficient *(cpcc)*
+
+Lets see how we can exploit it to determine the best method of H-clustering 
+
+```{r}
+cop_list<-list()
+
+for( i in c( "ward.D", "ward.D2", "single", "complete", "average", "mcquitty","centroid")){
+        hc<-hclust(dist_iris,method = i)
+
+        dist_coph<-cophenetic(x = hc)
+
+        cop_list[[i]]<-cor(dist_iris,dist_coph)
+}
+
+print(cop_list)
+
+```
+
+from the correlation coefficient we can see tha the "single","average" and centroid method represent the best methods 

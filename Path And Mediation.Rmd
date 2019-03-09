@@ -1,0 +1,117 @@
+---
+title: "Path Analysis"
+author: "Mo'men Mohamed"
+date: "March 9, 2019"
+output: html_document
+---
+####First of all lets load all libraries we need in our model building 
+
+```{r lib.,message=F,warning=F}
+library(lavaan)
+library(knitr)
+library(semPlot)
+
+```
+####In this project i will work on the data which introduced in **Latent Variable Modeling Using R** Book chapter 2 
+
+####This data to build the model which illustrated in This Picture  ![](D:\Data Science\STATS TUTORIAL & PRACTICE\statstools\SEM\Path.png)
+
+#### The following is the covariance matrix which stated there , and I am going to convert it to matrix to use it in model building 
+
+```{r cov}
+cov<-c(
+        84.85,			
+        71.28,	140.34,		
+        18.83,	−6.25,	72.92,	
+        60.05,	84.54,	37.18,	139.48
+        
+)
+
+#Convert it to Covariance Matrix
+
+cov<-lav_matrix_lower2full(cov)
+
+#Naming the matrix rows and columns 
+
+rownames(cov)<-colnames(cov)<-c("TE","SC","MC","SA")
+
+kable(cov,format = "markdown",align = "c")
+
+```
+
+####Now itis time to specifying the model using lavaan 
+
+```{r model build}
+model<-"
+SA ~ b1*SC + b2*MC + c*TE
+SC ~ a1*TE
+MC ~ a2*TE
+ind1:=a1*b1
+ind2:=a2*b2
+"
+```
+
+####After the specification lets run the model using cfa() function 
+
+```{r model run}
+fit<-cfa(model = model,sample.cov = cov,sample.nobs = 40)
+fit.summary<-summary(fit,fit.measures=T,standardized=T)
+```
+
+####In the summary we can see that there is no heywood cases 
+####Also after looking to fit measure we can find that CFI (0.949) is very good but we have a srious problem in TLI(0.695) and RMSEA (0.259) with cI (0.000 , 0.564)
+
+####To diagnose the specify the problem correctly we have to have a look on the parameters to see the following :
+
+##### 1- None significant loading (P > .05) between student acheivement and teacher expectation 
+##### 2- Also we find that loading between matrial covered and teacher expectation is not significant (P>.05)
+##### 3- Finally the mediation effect of Material covered is not significant (P > 0.05)
+
+#### you can find the table & diagram of loadings and Mediation parameter bellow and also fit measures
+
+```{r tables ,warning=FALSE}
+kable(data.frame(parameterestimates(fit))[-9,],format = "markdown",digits = 3)
+kable(t(round(data.frame(fitmeasures(fit,fit.measures = c("chisq","df","cfi","tli","rmsea","rmsea.ci.upper","rmsea.ci.lower"))),3)),format = "markdown",row.names = F)
+
+semPlot::semPaths(object = fit,whatLabels = "std",layout = "tree")
+```
+
+####Now I think that it is useful to run some modification on this model 
+
+####So lets inspect the modification indecies first 
+
+```{r mod inx}
+kable(data.frame(modificationindices(object = fit,sort. = T)),format = "markdown",digits = 3)
+```
+
+####See here , the modification index dosen't add any usefull information , but we can conduct some modification by removing the none signficanat parameters 
+
+```{r model 2}
+model2<-"
+SA ~ b1*SC + b2*MC 
+SC ~ a1*TE
+ind1:=a1*b1
+"
+#Run the model 
+
+fit2<-cfa(model2,sample.cov = cov,sample.nobs = 40)
+
+summary(fit2,fit.measures=T,standardized=T)
+
+#drawing the diagram & tabels
+
+kable(data.frame(parameterestimates(fit2))[-c(6,7,8),],format = "markdown",digits = 3)
+kable(t(round(data.frame(fitmeasures(fit2,fit.measures = c("chisq","df","cfi","tli","rmsea","rmsea.ci.upper","rmsea.ci.lower"))),3)),format = "markdown",row.names = F)
+
+semPaths(fit2,whatLabels = "std",layout = "tree")
+```
+
+#### Here we can see an improvement in CFI (.961) and RMSEA (0.159) although it stills bad 
+
+#### also all parameters are significant So, lets test if the difference between the two model is significant using the difference in X^2 and CFI and RMSEA 
+
+```{r diff}
+anova(fit,fit2)
+```
+
+####The difference between the two model is not significant (P>.05) but we see a noticed improve in CFI(>.01) and TLI, so we will keep the most parsimonious and improved one (Fit2)

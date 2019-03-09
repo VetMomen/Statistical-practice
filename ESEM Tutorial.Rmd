@@ -1,0 +1,170 @@
+---
+title: "ESEM Simulation"
+author: "Mo'men Mohamed"
+date: "March 7, 2019"
+output: html_document
+---
+
+###loading libraries
+
+```{r lib,message=F,warning=F}
+library(lavaan)
+library(bnstruct)
+library(psych)
+library(GPArotation)
+```
+
+###importing the scale
+
+```{r scale imp}
+df<-read.csv(file = "./data sets/c17.csv")
+
+#looking at the class
+
+apply(df,2,class)
+
+#convering the class to numeric
+
+for(i in 1:(ncol(df))){
+        df[,i]<-as.numeric(df[,i])
+}
+
+str(df)
+
+```
+
+###Testing if there are any typo or missing 
+
+```{r check}
+
+#check by col
+cch<-apply(df,2,function(x){
+        c(min=min(x,na.rm = T),
+          max=max(x,na.rm=T),
+          na=sum(is.na(x))/nrow(df))
+})
+
+print(cch)
+
+any(cch["na",]>.05)
+
+#check by row
+rch<-apply(df,1,function(x){
+        c(na=sum(is.na(x)/ncol(df)))
+})
+
+any(rch>.05)
+
+
+```
+###Now there are some items need to be reversed 
+
+```{r reverse}
+key<-rep(1,ncol(df))
+key[c(2,3,9,19,22,23)]<-key[c(2,3,9,19,22,23)]*-1
+
+df<-reverse.code(keys =key,items = df )
+df<-data.frame(df)
+names(df)<-c(paste0("q",1:23))
+
+```
+###exploring some EFA assumption
+####1- Additivity
+
+####2- Correlation
+
+####3- sample size adequacy
+
+```{r assumption,warning=F,message=F}
+#additivity
+
+print(cor(df))
+
+apply(df,2,function(x){
+        any(x>=abs(.9)&x<1)
+})
+#Great!! there is no additivity 
+
+#correlation enouph by bartlett test
+
+cortest.bartlett(df)
+
+#well the correlation test is significant , so the item is correlated enough 
+
+#adequacy of sample size
+
+KMO(df)
+
+# the KMO score is >.9 and it indicates the adequacy of the sample size 
+
+```
+
+###Now lets test the number of factors
+
+```{r No.Fa}
+fa<-fa.parallel(df,fm = "ml",fa = "fa")
+#parallel test suggesting 6 factor 
+
+#lets see kaisar method eigen value>.7
+sum(fa$fa.values>.7) # Kaisar suggestion of two 
+
+#now see scree plot
+
+plot(fa) #scree plot suggest 2 factor 
+```
+
+###So, we are going to choose the most parcimonious model --> 2 factor 
+
+```{r fa}
+efa<-fa(df,nfactors=2,rotate="geominQ",fm="ml",alpha=T)
+
+#visualiz
+
+fa.diagram(efa)
+load<-zapsmall(round(matrix(efa$loadings,ncol = 2),2),3)
+dimnames(load)<-list(names(df),c("f1","f2"))
+print(load)
+
+#removing Item 23
+df<-df[,-23]
+
+#running EFA Again
+efa<-fa(df,nfactors=2,rotate="geominQ",fm="ml",alpha=T)
+fa.diagram(efa)
+load<-zapsmall(round(matrix(efa$loadings,ncol = 2),2),3)
+dimnames(load)<-list(names(df),c("f1","f2"))
+print(load)
+```
+
+###now lets run the normal CFA 
+
+```{r CFA}
+df<-data.frame(df)
+
+cfamod<-"
+f1=~q1+q2+q3+q4+q5+q6+q7+q9+q10+q12+q13+q14+q15+q16+q18+q19+q20+q21+q22
+f2=~q8+q11+q17
+"
+fit1<-cfa(model = cfamod,data = df,estimator = "MLR")
+
+summary(fit1,fit.measures=T)
+```
+
+
+###Now lets run ESEM Model
+
+```{r ESEM}
+esemmod<-vector()
+
+for(i in 1:2){
+        esemmod[i]<-paste0("f",i,"=~",paste0(c(load[,i]),"*",rownames(load),collapse = "+"))
+}
+print(esemmod)
+esemmod<-paste0(esemmod,collapse = "\n")
+
+esemfit<-cfa(esemmod,data = df,estimator="MLR")
+
+summary(esemfit,fit.measures=T)
+```
+
+###the difference in CFI between the two model is **0.862** - **0.849** = **0.013** which is significant 

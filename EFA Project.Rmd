@@ -1,0 +1,288 @@
+---
+title: "EFA Tutorial"
+author: "Mo'men Mohamed"
+date: "March 5, 2019"
+output: html_document
+---
+
+
+###This is An EFA Project explaining the practice and skills needed
+
+###Notes:
+####that the data used from [statstool](http://statstools.com/) and the tutorial guided by their tutorial 
+
+####For Any Advice Please feel free to contact me at vet.m.mohamed@gmail.com
+
+##Steps 
+
+The following is the steps of running **EFA**
+
+1- Testing the Assumptions
+
+2- Specifying the number of factors 
+
+3- Choosing the factor math and rotation type 
+
+4- Exploring the Adequacy of EFA model 
+
+
+####First of all lets load all libraries which may need to
+
+```{r librares,message=FALSE,warning=FALSE}
+library(psych) ; library(GPArotation)
+library(bnstruct) ; library(knitr)
+```
+
+####- Now Lets import our data to work with 
+
+```{r importing data }
+efadf<-read.csv(file = "3 efa.csv")
+head(efadf)
+efadf<-efadf[,-21]
+```
+
+####here we have to take a look on the data structure and attr.for starting testing the assumptions
+
+##1- testing the assumption
+
+
+####it includes :
+
+#####*Accurecy & Missing Value*
+
+```{r str&attr}
+str(efadf)
+
+```
+
+####as we see here we have a problem with the class of numeric value 
+
+```{r class modification}
+for(i in 1:(ncol(efadf))){
+  efadf[,i]<-as.numeric(efadf[,i])
+}
+str(efadf)
+```
+
+####Great !!
+
+####Now lets look at the summary of the data 
+
+```{r data summary}
+desc<-apply(efadf,2,function(x){
+  (
+    round(c(
+    min=min(x,na.rm = T),
+    max=max(x,na.rm = T),
+    mean=mean(x,na.rm = T),
+    na=sum(is.na(x))/nrow(efadf)
+    ),2)
+  )
+})
+
+print(desc)
+```
+####is there are any item has missing more than 5% ? 
+```{r 5%}
+any(desc["na",]>.05)
+```
+####great there is no item with more than 5% missing value 
+####now test the missing for each individual
+```{r miss ind}
+ind.desc<-apply(efadf,1,function(x){
+  round(c(sum(is.na(x))/ncol(efadf)),2)
+})
+
+any(ind.desc>.05)
+
+which(ind.desc>.05)
+
+ind.desc[which(ind.desc>.05)]
+```
+####woow it is so high percent 
+####we will delete these members from the data 
+```{r mem rem}
+efadf<-efadf[-which(ind.desc>.05),]
+```
+
+
+####Now we have to impute the missing value 
+
+```{r missing replace}
+efadf<-knn.impute(as.matrix(efadf),k = 5)%>%data.frame()
+```
+
+
+####finally lets reverse the reversed items !!
+```{r reverse}
+key<-rep(1,ncol(efadf))
+
+key[c(1,2,11,13,15,17,19,20)]<-key[c(1,2,11,13,15,17,19,20)]*-1
+
+efadf<-reverse.code(keys = key,items = efadf)
+
+```
+
+####congrats: we finished this part **Acurecy and missing**
+
+Now I am going to test some assumption related to factor analysis like:
+
+1- **Additivity** 
+
+2- **enough correlation between items**
+
+3- **adequacy of sample **
+
+```{r assump,warning=FALSE,message=FALSE}
+#Additivity 
+
+corr<-cor(efadf,method = "p")
+
+apply(corr,2,function(x){
+        any(x<1&x>=abs(.9))
+})
+
+#Ok !! there is no additivity 
+
+#Now test the enough correlation using correlation bartelett test
+
+cortest.bartlett(efadf)
+
+#significant result indicate enough correlation 
+
+#Finally KMO test for sample size adequacy 
+
+KMO(efadf)
+
+#here we can see that the data roughly adequate as it is >.8
+```
+
+
+
+Now it s the time to dive more in EFA 
+
+##2- taking decision about the number of factors 
+
+by following the next method 
+
+1- **Parallel test** 
+
+2- **Kaiser criterion**
+
+3- **scree plot**
+
+```{r fa number}
+nf<-fa.parallel(x = efadf,fa = "fa")#suggestion of parallel test is 5 factors 
+
+sum(nf$fa.values>.7) #Kaiser criterion suggest 3 factors
+
+plot(nf) #scree plot suggest 2-3 factor 
+```
+
+####lets try 3 factors and look at the adequacy of the model 
+
+
+```{r 3 fa}
+efafit<-fa(efadf,nfactors = 3,rotate = "oblimin")
+print(efafit)
+
+
+#extracting the fit measure 
+
+fitm<-c(RMS=efafit$rms,
+RMSEA=efafit$RMSEA,
+TLI=efafit$TLI,
+CFI=(
+        1-(efafit$STATISTIC-efafit$dof)/(efafit$null.chisq-efafit$null.dof)
+))
+print(fitm)
+```
+
+####the model here is poor but lets take a look on the loading and drawing the diagram
+
+```{r}
+fa.diagram(efafit)
+
+efafit$loadings
+
+```
+
+####as we see here that all items are good regarding its loading to factors 
+
+####So, lets try to repeat the analysis with 2 factors instead of 3 
+
+```{r 2 factors}
+efafit2<-fa(efadf,nfactors = 2,rotate = "oblimin")
+
+print(efafit2)
+
+
+#extracting the fit measure 
+
+fitm2<-c(RMS=efafit2$rms,
+RMSEA=efafit2$RMSEA,
+TLI=efafit2$TLI,
+CFI=(
+        1-(efafit2$STATISTIC-efafit2$dof)/(efafit2$null.chisq-efafit2$null.dof)
+))
+
+print(fitm2)
+
+
+fa.diagram(efafit2)
+
+efafit2$loadings
+```
+
+####As we see here that there are a great distortion in the loading with a huge drop in CFI 
+
+####so we will back to 3 factor model 
+
+
+####The following codes for reporting in tables 
+
+```{r tables}
+
+fa.load<-matrix(efafit$loadings,ncol = 3,dimnames=list(c(paste0("q",1:20)),c("F1","F2","F3"))
+)
+
+fa.var<-matrix(efafit$Vaccounted,ncol = 3,dimnames = list(c("SS loading","Prop var","Cum var","Prop explain","Cum Prop"),c(paste0("MR",1:3))))
+
+fa.cor<-matrix(efafit$score.cor,ncol = 3,dimnames = list(c(paste0("MR",1:3)),c(paste0("MR",1:3))))
+
+efa.fit<-data.frame(fitm)
+
+#Tables
+kable(fa.var,format = "markdown",align = "c",digits = 3,caption = "Table1 : Variance Explanation for factors")
+kable(fa.cor,format = "markdown",align = "c",digits = 3,caption = "Table2: the correlation between factors")
+kable(fa.load,format = "markdown",align = "c",digits = 3,caption = "Table3: Item Factor Loading")
+
+kable(efa.fit,format = "markdown",align = "c",digits = 3,caption = "Table4: Fit measures")
+
+```
+
+Finally lets Test the reliability of Each Factor by Alpha method
+
+```{r alpha,warning=F,message=F}
+
+#specifying the idx
+f.idx<-list()
+f.idx$f3<-c(5,13,6,19,9,10,11,17,20,4,8,7)
+f.idx$f1<-c(1,12,14,18,16,2)
+f.idx$f2<-c(15,3)
+print(f.idx)
+
+
+alpha(efadf[,f.idx$f1])$total #1st factor
+alpha(efadf[,f.idx$f2])$total #2nd factor
+alpha(efadf[,f.idx$f3])$total #3rd factor 
+
+```
+
+####Here we see that all alpha for all factors are above .80 , and it is a good indicator for the reliability of each factor 
+
+##Congrats !!
+
+
+
+

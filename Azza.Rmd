@@ -1,0 +1,136 @@
+---
+title: "AZZA"
+author: "Mo'men Mohamed"
+date: "February 8, 2019"
+output: html_document
+---
+
+**libraries**
+
+```{r libraries,message=FALSE}
+library(readxl)
+
+library(magrittr)
+
+library(MVN)
+
+library(tidyr)
+
+library(dplyr)
+
+library(psych)
+
+library(ggplot2)
+
+library(car)
+```
+
+#Test Validation And Reliability
+
+##Adjustment test
+
+**importing the data**
+
+```{r import}
+adjust_score<-read_excel("./data sets/azza/azza-adjust.xlsx",sheet = 1)
+adjust_judge<-read_excel("./data sets/azza/azza-adjust.xlsx",sheet = 2)
+```
+
+**Knowing the class**
+
+```{r class}
+apply(adjust_score,2,class)
+
+class(adjust_score)
+
+adjust_mat<-adjust_score[,-1]
+```
+
+**decribing the data **
+
+```{r decribe }
+round(apply(adjust_mat,2,function(x){
+        c(max=max(x),
+          min=min(x),
+          na=sum(is.na(x)),
+          mean=mean(x),
+          median=median(x),
+          sd=sd(x))
+}),2)
+
+
+```
+
+**normality**
+
+```{r normality,error=TRUE}
+
+#qqplot to residuals 
+
+resid<-lm(A1~.,adjust_mat)$resid
+resid<-data.frame(resid=resid)
+resid%>%ggplot(aes(x = resid))+geom_histogram()
+qqPlot(x = resid$resid)
+
+resid2<-lm(A1~.,adjust_mat[-c(30,54),])$resid
+resid2<-data.frame(resid=resid2)
+resid2%>%ggplot(aes(x = resid))+geom_histogram()
+qqPlot(x = resid2$resid)
+
+#shapiro test
+
+apply(adjust_mat,2,shapiro.test)
+
+apply(adjust_mat,2,function(x){
+        tryCatch(shapiro.test(x = x),error=function(err){NA})
+})
+
+#Mardia test
+
+mardia(adjust_mat)
+
+
+```
+
+**Unfortunatly the data is so singular **
+
+**testing the additivity **
+
+```{r additivity}
+cor(adjust_mat)
+```
+
+
+**Ok , I decided to analyse the SME data to see the agreement on the Items**
+
+```{r see the data}
+head(adjust_judge)
+```
+
+**calculating the percent of agreement for each item **
+
+```{r percent calculation}
+adjust_judge$agree<-apply(adjust_judge[,-1],1,function(x){
+        sum(x)/length(x)
+})
+
+adjust_judge
+```
+
+**assigning items lower than *.8***
+
+```{r lower .8}
+adjust_judge[adjust_judge$agree<.8,]
+```
+
+**calculating binomial test **
+
+```{r binomial test}
+adjust_judge$P.Value<-rep(NA,nrow(adjust_judge))
+for(i in 1:nrow(adjust_judge)){
+        round(adjust_judge$P.Value[i]<-binom.test(x = rowSums(adjust_judge[i,c(2:11)]),n = 10,p = .8,alternative = "less")$p.value,2)
+}
+
+adjust_judge[,c(1,13)]
+
+```

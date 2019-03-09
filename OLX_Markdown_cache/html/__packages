@@ -1,0 +1,9 @@
+base
+dplyr
+tidyr
+magrittr
+xml2
+rvest
+RSelenium
+stringr
+lubridate

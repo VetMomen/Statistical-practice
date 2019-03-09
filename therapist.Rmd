@@ -1,0 +1,138 @@
+---
+title: "Therapist"
+author: "Mo'men Mohamed"
+date: "December 27, 2018"
+output: html_document
+---
+
+Fisrstly need to load *rvest* library
+
+```{r }
+library(RSelenium)
+```
+
+other libraries may be useful
+
+```{r}
+library(magrittr)
+library(stringr)
+```
+
+
+loading the remote driver
+
+```{r}
+rs<-rsDriver(browser = "firefox")
+rmdriv<-rs$client
+```
+
+
+
+
+getting the main url of NY therapists 
+
+```{r}
+nymainurl<-"https://www.zencare.co/new-york-city/therapists"
+```
+
+navigating to the link
+```{r}
+rmdriv$navigate(nymainurl)
+```
+
+getting the name elements
+```{r}
+nameelement<-rmdriv$findElements(using = "xpath",value = "//h3[@class='therapistName']")
+
+```
+
+extracting the names
+
+```{r}
+names<-sapply(nameelement,function(x){
+        x$getElementText()
+})
+```
+
+extracting the name only 
+```{r}
+Names<-sapply(names,function(x){
+        str_to_lower(x)%>%str_remove_all(pattern = "((\\,)(\\s)([:alpha:]{1,})){1,}")})
+```
+
+converting the list to data frame for easy manipulation 
+
+```{r}
+Names<-unlist(Names)
+```
+
+
+extracting href
+
+```{r}
+hrefelement<-rmdriv$findElements(using = 'xpath',value = "//div[@class='sqs-block-content']/div/a")
+```
+
+getting href
+
+```{r}
+href<-sapply(hrefelement,function(x){
+        x$getElementAttribute("href")
+})
+
+href<-unlist(href)
+```
+
+making data frame of names and url
+
+```{r}
+Thirapistdata<-data.frame(Names,href)
+```
+
+extracting degree nodes
+
+```{r}
+degreeelement<-rmdriv$findElements(using = "xpath",value = "//span[@class='degree']")
+
+```
+
+getting the degree names
+
+```{r}
+Degree<-sapply(degreeelement,function(x){
+        x$getElementText()
+})
+
+Degree<-unlist(Degree)
+```
+
+adding the dgree to data frame
+
+```{r}
+Thirapistdata<-cbind(Thirapistdata,Degree)
+
+```
+
+
+finding specialization element 
+
+```{r}
+specelement<-rmdriv$findElements(using="xpath",value="//p[@class='infoMobile']")
+
+```
+
+getting the specialization info 
+
+```{r}
+Spec<-sapply(specelement,function(x){
+        x$getElementText()
+})
+
+Spec<-unlist(Spec)
+```
+
+adding it to the data frame 
+
+```{r}
+Thirapistdata<-cbind(Thirapistdata,Spec)
+```

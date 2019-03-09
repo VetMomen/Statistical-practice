@@ -1,0 +1,115 @@
+---
+title: "Pokemon data"
+author: "Mo'men Mohamed"
+date: "January 25, 2019"
+output: html_document
+---
+```{r recommended libraries,message=FALSE}
+library(readr)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(stringr)
+library(factoextra)
+library(NbClust)
+library(gridExtra)
+```
+
+
+```{r importing data }
+pok<-read_csv(file = "./data sets/Pokemon.csv")
+
+head(pok)
+
+```
+
+looking at the data type for modification 
+```{r data str}
+str(pok)
+```
+
+Looking at the character variables if it is needed to convering to Factors instead
+
+```{r chr to factor}
+apply(pok[,c("Type 1","Type 2")],2,unique)
+clust_var<-names(pok[,c("HP","Attack","Defense","Sp. Atk","Sp. Def","Speed")])
+```
+
+I think that it will be useful to convert it to factors and the index to chr 
+
+```{r convertion}
+
+pok<-pok%>%mutate(`#`=as.character(`#`),Name=as.character(Name),`Type 1`=as.factor(`Type 1`),`Type 2`=as.factor(`Type 2`))
+
+str(pok)
+```
+
+Now we will clustering the data 
+
+and the first step to test the tendency of the data to be clustered 
+
+and for that we will use a single function which test the *Hopkins statistics* and *VAT*
+
+```{r clustering tendency,cache=TRUE}
+scaled_pok<-scale(pok[,c("HP","Attack","Defense","Sp. Atk","Sp. Def","Speed")])
+
+tend<-get_clust_tendency(data = scaled_pok,n = 700)
+tend
+```
+
+here we can see the Hopkins statistics is near to 1 **`r tend$hopkins_stat`** and it reveal that the data is clustered the correlation map indicate that it has inclination to 2 clusters
+
+but we still need to determine it more accurtely as following 
+
+```{r Kmean number of clusters, cache=TRUE}
+#using NBclust package 
+
+clus_num<-NbClust(pok[,c("HP","Attack","Defense","Sp. Atk","Sp. Def","Speed")],method = "average",index = "gap")
+
+plot(clus_num$All.index)
+
+clus_num2<-NbClust(pok[,c("HP","Attack","Defense","Sp. Atk","Sp. Def","Speed")],method = "average",index = "silhouette")
+
+plot(clus_num2$All.index)
+
+```
+
+Now Lets try Kmeans Clusters 
+
+```{r Kmeans,cache=TRUE}
+
+set.seed(100)
+
+
+kclust<-kmeans(x = pok[,c("HP","Attack","Defense","Sp. Atk","Sp. Def","Speed")],centers = 2,nstart = 100)
+
+pok$cluster<-as.factor(kclust$cluster)
+
+plot(pok[,c("HP","Attack","Defense","Sp. Atk","Sp. Def","Speed")],col=pok$cluster)
+
+```
+
+lets see the distribution of types on the clusters
+
+```{r}
+table(pok$`Type 1`,pok$cluster)
+
+table(pok$`Type 2`,pok$cluster)
+```
+
+
+Now lets explore all paramaters in light of clusters 
+
+
+```{r HP }
+tapply(pok$Attack,pok$cluster,function(x){
+        return(c(mean=mean(x),
+        median=median(x),
+        sd=sd(x),
+        IQR=IQR(x),
+        CI=mean(x)+c(1,-1)*qnorm(.95)*sd(x)))
+})
+
+```

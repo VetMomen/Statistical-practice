@@ -1,0 +1,166 @@
+---
+title: "ibrahim"
+author: "Mo'men Mohamed"
+date: "February 7, 2019"
+output: html_document
+---
+
+libraries
+
+```{r libraries}
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(psych)
+library(car)
+library(GPArotation)
+library(robustbase)
+```
+
+reading the data 
+
+```{r reading}
+test<-read_excel("./data sets/ibrahim.xlsx")
+
+Sys.setlocale(category = "LC_ALL",locale = "Arabic")
+
+head(test)
+
+#removing the last 2 columns and recoding the first one 
+
+test<-test[,-c(ncol(test),ncol(test)-1)]
+
+dim(test)
+#removing unused rows
+
+test<-test[-c(84:nrow(test)),]
+
+#looking at the structure 
+
+str(test)
+
+```
+
+testing for accuracy
+
+```{r accuracy}
+apply(test[,-1],2,function(x){
+        c(min(x,na.rm = T),max(x,na.rm = T))
+})
+
+```
+
+testing missing values
+
+```{r missing }
+
+#percent of missing
+
+apply(test[,-1],2,function(x){
+        (sum(is.na(x))/nrow(test))*100
+})
+
+#number ofmissing 
+
+apply(test[-1,],2,function(x){
+        sum(is.na(x))
+})
+
+```
+
+testing outlier 
+
+```{r outlier}
+
+#Mahalanobis D
+
+mah<-mahalanobis(x = test[,-1],center = colMeans(test[,-1]),cov = cov(test[,-1]))
+
+
+#assigning the cutoff point 
+
+cut<-qchisq(.99,ncol(test[,-1]))
+
+# assigning the value > cutoff point 
+
+which(mah>cut)
+
+```
+
+
+testing additivity
+
+```{r additivity }
+corr<-cor(test[,-1])
+symnum(corr)
+symnum(corr)%>%write.csv(file = "./data sets/sym.csv")
+```
+
+multivariate normality 
+
+```{r normality}
+#mardia test
+
+mardia(x = test[,-1])
+
+
+#shapiro for each variable
+
+which(apply(test[,-1],2,function(x){
+        shapiro.test(x)$p.value
+})<.05)
+
+#qqplot
+resid<-lm(test$A1[-c(33,67)]~.,test[-c(33,67),-1])$resid
+resid<-data.frame(resid=resid)
+qqPlot(x=resid$resid)
+```
+
+diagnostics
+```{r diagnostics }
+
+plot(lm(test$A1~.,test[,-1]))
+
+```
+
+adequecy of sample number and correlation 
+
+```{r adequacy }
+#sample size
+kmo<-KMO(r = cor(test[,-1]))
+which(kmo$MSAi<.7)
+
+#cor adequecy
+
+cortest.bartlett(cor(test[,-1]),n = nrow(test))
+```
+
+
+Knowing the number of factors
+
+```{r nf}
+nf<-fa.parallel(x = test[,-1],fm = "lm",fa = "fa")
+
+
+nf$fa.values #exploring the eaign value 
+sum(nf$fa.values>=1) # number of factors #1 eign value criteria 
+sum(nf$fa.values>=.7) # number of factors #.7 eign value criteria
+
+
+plot(nf) #scree plot
+```
+
+
+doing factor analysis 
+
+```{r fa}
+
+#estimating MCD
+mcd<-covMcd(x = test[,-1],cor = TRUE)
+
+#do it
+fa<-fa(covar = T,r = mcd$cov,nfactors = 4,rotate = "oblimin")
+fa$loadings
+fa$factors
+```

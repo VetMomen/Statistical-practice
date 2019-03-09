@@ -1,0 +1,11 @@
+base
+readr
+magrittr
+dplyr
+tidyr
+ggplot2
+lubridate
+stringr
+factoextra
+bindrcpp
+NbClust

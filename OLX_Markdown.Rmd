@@ -1,0 +1,360 @@
+---
+title: "OLX Project"
+author: "Mo'men Mohamed"
+date: "December 12, 2018"
+output:
+  html_document: default
+  word_document: default
+---
+
+### - What is the aim from this Project : 
+ getting all information related to real state prices in Alexandria
+ 
+ this information are from [**OLX**](https://olx.com.eg/en/) which is a site for selling and buying every thing online 
+
+### - to whome this information are going to be useful ?
+
+to all who are interested in selling or buying real states 
+
+whether they are a companies, individuals Or Even middlemen 
+
+------------------------------------------
+
+## *Analysis statring*
+
+first of all loading all packages we need:
+```{r load packages ,message=FALSE}
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(rvest)
+library(RSelenium)
+library(stringr)
+library(lubridate)
+```
+
+
+We will start our scraping from this [*url*](https://olx.com.eg/en/properties/properties-for-sale/apartments-for-sale/alexandria/)  which is the URL of real state for selling in Alex only 
+
+```{r making url object}
+url<-'https://olx.com.eg/en/properties/properties-for-sale/apartments-for-sale/alexandria/'
+```
+
+after that we will getting all *css* and *xpath* we need to collect **basic information** from the URL 
+
+```{r storing css}
+title_css<-'.ads__item__title'
+
+location_css<- '.ads__item__location'
+
+price_css<-'.price'
+```
+
+then we will find that the web site contains 500 pages having the information we need, so we will generate an object by loop contains all pages which are would to be scraped 
+
+```{r url object}
+urls<-list()
+
+for( i in 1:500){
+        urls[[i]]<-paste0('https://olx.com.eg/en/properties/properties-for-sale/apartments-for-sale/alexandria/?page=',i)
+}
+```
+
+The Next code is to scab the basic information 
+
+```{r scrabing code,eval=F}
+
+olx_ads<-list()
+
+for( i in 1:length(urls)){
+        olx<-read_html(x = urls[[i]])
+        title<-olx%>%html_nodes(css = title_css)%>%html_text(trim = T)
+        location<-olx%>%html_nodes(css = location_css)%>%html_text(trim = T)
+        price<-olx%>%html_nodes(css = price_css)%>%html_text(trim = T)
+        price<-price[-c(1,2)]
+        url<-olx%>%html_nodes(css = title_css)%>%html_attr('href')
+        olx_ads[[i]]<-data.frame(title,location,price,url)
+        gc()
+}
+```
+
+this code will give us an object called **olx_ads**
+
+then we need to convert it to *data frame* using this code to bind all rows in the list 
+
+```{r data frame,eval=F}
+
+olx_ads<-bind_rows(olx_ads)
+
+```
+
+after looking to the data we will find that there are lot of ads repeat ion 
+
+so we need to remove duplicated record 
+
+```{r duplicate remove,eval=F}
+
+olx_ads<-distinct(olx_ads)
+
+head(olx_ads)
+```
+
+```{r reading local data ,echo=FALSE,message=FALSE}
+olx_ads<-readRDS(file = './data sets/olx data.rds')
+
+Sys.setlocale(category = 'LC_ALL',locale = 'Arabic')
+
+head(olx_ads)
+```
+
+we will notice that the url is arabic url 
+
+here we need to make all url in *english* by adding **en** to the url
+
+```{r english formation,cache=TRUE}
+str_sub(olx_ads$url,start = 19,end = 18 )<-'/en'
+```
+
+
+after scraping all basic information which are :
+
+- ads title 
+- price 
+- location 
+- URL of each ad 
+
+Now it is time to collect more information in depth like :
+
+- levels number 
+- number of rooms 
+- Amenities 
+- date 
+- Contact number
+
+but to do that , it will take lot of computation as it will collect `r nrow(olx_ads)*5` piece of information 
+
+so, we will work on each area in Alex individually 
+
+those areas are :
+
+**`r unique(olx_ads$location)`**
+
+the code to get unique values of location is
+```{r getting the uniques of }
+locations<-unique(olx_ads$location)
+```
+
+then we will split the data by each area :
+
+```{r data split}
+splitted_data<-split(olx_ads,olx_ads$location)
+```
+
+now we need to get information in depth
+
+'rvest' package unfortunately doesn't fit for this step
+
+so we will use 'r selenium' to create a function get all information we need 
+
+these info are : 
+
+- Amenities
+- Area
+- Level
+- Bedrooms number
+- Bathrooms number 
+- If it is furnished 
+- Phone Number
+- Date
+
+Firstly we have to load remote server by r selenium
+
+```{r remote server loading,eval=FALSE}
+rs<-rsDriver(browser = 'firefox')
+remdr<-rs$client
+```
+
+this function is :
+```{r other info function}
+more_info<-function(url){
+        remdr$navigate(url)
+        area_element<-remdr$findElements(using = 'xpath',value = '/html/body/div[4]/section/div/div/div[2]/div[1]/div[1]/div[2]/div[3]/table/tbody/tr[2]/td[2]/table/tbody/tr/td/strong')
+        area<-sapply(area_element,function(x){
+                x$getElementText()
+        })
+        
+        bed_element<-remdr$findElements(using = 'xpath',value = '/html/body/div[4]/section/div/div/div[2]/div[1]/div[1]/div[2]/div[3]/table/tbody/tr[1]/td[2]/table/tbody/tr/td/strong/a')
+        
+        bed_number<-sapply(bed_element,function(x){
+                x$getElementText()
+        })
+        
+        level_element<-remdr$findElements(using = 'xpath',value = '/html/body/div[4]/section/div/div/div[2]/div[1]/div[1]/div[2]/div[3]/table/tbody/tr[3]/td[2]/table/tbody/tr/td/strong/a')
+        
+        level<-sapply(level_element,function(x){
+                x$getElementText()
+        })
+        
+        phone_click<-tryCatch(remdr$findElement(using = 'xpath',value = '/html/body/div[4]/section/div/div/div[2]/div[1]/div[2]/form/fieldset/div/div[1]/ul/li/div[2]/span/span'),error=function(err){NA})
+        tryCatch(phone_click$clickElement(),error=function(err){NA})
+        
+        phone_element<-tryCatch(remdr$findElements(using = 'xpath',value = '/html/body/div[4]/section/div/div/div[2]/div[1]/div[2]/form/fieldset/div/div[1]/ul/li/div[2]/strong'),error=function(err){NA})
+        phone<-sapply(phone_element,function(x){
+                x$getElementText()
+        })
+        
+        date_element<-remdr$findElements(using = 'xpath',value = '/html/body/div[4]/section/div/div/div[2]/div[1]/div[1]/div[1]/p/small/span')
+        date<-sapply(date_element,function(x){
+                x$getElementText()
+        })
+        
+        info<-list(Date=date,Area=area,Level=level,Bed_rooms=bed_number,Phone_number=phone)
+        info<-sapply(info,function(x){
+                if(length(x)<1){NA}
+                else{print(x)}
+        })
+        return(info)
+}
+```
+
+now we can use this function and try it on a certain area in alex
+
+**Seyouf** For example
+
+```{r scraping,cache=TRUE,eval=FALSE}
+Seyouf<-splitted_data[['Seyouf']]
+
+pb<-txtProgressBar(min = 0,max = nrow(Seyouf),style = 3)
+
+Seyouf_other_info<-list()
+for(i in 1:nrow(Seyouf)){
+        Seyouf_other_info[[i]]<-more_info(Seyouf$url[i])
+        setTxtProgressBar(pb = pb,value = i)
+}
+```
+
+next step is to convert the info in the list to arranged data frame 
+
+```{r data frame creation ,eval=FALSE}
+sef<-data.frame()
+for(i in 1:199){
+        for(j in c('Date','Area','Level','Bed_rooms','Phone_number')){
+                sef[i,j]<-Seyouf_other_info[[i]][j]
+        }
+}
+```
+
+now we will bind the basic and other information in single data set called **Seyouf_data**
+
+```{r data binding,cache=TRUE,eval=FALSE}
+Seyouf_data<-bind_cols(Seyouf,sef)
+```
+
+```{r,echo=FALSE}
+Seyouf_data<-readRDS(file = "./data sets/Seyouf_data.rds")
+```
+
+```{r ,echo=FALSE}
+saveRDS(object = Seyouf_data,file = './data sets/Seyouf_data.rds')
+```
+
+now lets work on the data and adjusting the class of each variable 
+
+firstly work on price 
+
+removing "EGP" statement 
+
+```{r EGP & comma remover}
+Seyouf_data$price<-sapply(Seyouf_data$price,function(x){
+        x%>%str_remove_all(pattern = "\\,")
+})
+
+Seyouf_data$price<-sapply(Seyouf_data$price,function(x){
+        x%>%str_remove_all(pattern = "[:alpha:]")
+})
+```
+
+```{r phone number modification}
+Seyouf_data$Phone_number<-sapply(Seyouf_data$Phone_number,function(x){
+        if(is.na(x)){x<-NA}
+        else if(str_detect(x,'x')){x<-NA}
+        else{x}
+})
+```
+
+
+after that lets convert all numbers to numeric object
+
+```{r variables as numeric,warning=FALSE}
+Seyouf_data<-Seyouf_data%>%mutate(price=as.numeric(price),
+                                  Area=as.numeric(Area),
+                                  Level=as.numeric(Level),
+                                  Bed_rooms=as.numeric(Bed_rooms))
+```
+
+now cleaning the Area and Number of levels and bed rooms
+
+```{r cleaning }
+Seyouf_data<-Seyouf_data%>%mutate(
+        Area=sapply(Area, function(x){
+                if(is.na(x)){NA}
+                else if (x<=20){NA}
+                else{x}
+        }),
+        Level=sapply(Level,function(x){
+                if(is.na(x)){NA}
+                else if(x>=15){NA}
+                else{x}
+        }),
+        Bed_rooms=sapply(Bed_rooms,function(x){
+               if(is.na(x)){NA}
+                else if(x>=5){NA}
+                else{x} 
+        })
+)
+```
+
+this is the time of working with date (cleaning and modification)
+
+```{r date cleaning}
+Seyouf_data<-Seyouf_data%>%mutate(
+        Date=sapply(Date,function(x){
+                x%>%str_extract("(?<=(\\,)(\\s))([:digit:]{1,2})(\\s)((December)|(November))(\\s)[:digit:]{4}")
+        }),
+        Date=dmy(Date)
+)
+```
+
+
+Now we have to save this object for future processing 
+
+```{r save data}
+saveRDS(object = Seyouf_data,file = './data sets/Seyouf_data_.rds')
+```
+
+after testing our code *Seyouf* 
+
+lets implement it on all the data of all areas 
+
+```{r all data implementation,eval=FALSE}
+pb<-txtProgressBar(min = 0,max =nrow(olx_ads),style = 3)
+
+olx_other_info<-list()
+for(i in 1:nrow(olx_ads)){
+        olx_other_info[[i]]<-more_info(olx_ads$url[i])
+        setTxtProgressBar(pb,i)
+}
+close(pb)
+```
+
+```{r,echo=FALSE}
+olx_other_info<-readRDS(file = './data sets/OLX.rds')
+```
+
+```{r saving data}
+saveRDS(object = olx_other_info,file = './data sets/OLX.rds')
+```
+
+
+
+
