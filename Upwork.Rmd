@@ -1,0 +1,93 @@
+---
+title: "Upwork Scraping"
+author: "Mo'men Mohamed"
+date: "March 16, 2019"
+output: html_document
+---
+
+Loading libraries
+
+```{r lib}
+library(RSelenium) ; library(magrittr) ; library(tidyr) ; library(dplyr)
+```
+
+Load the server
+
+```{r server}
+rs<-rsDriver(browser = "firefox")
+
+rmDrive<-rs$client
+
+
+```
+
+Navigate to the website
+
+```{r navigate}
+rmDrive$navigate("https://www.upwork.com/ab/find-work/")
+
+```
+
+Login 
+
+```{r login}
+logelement<-rmDrive$findElement(using = "xpath",value = "//div/input[@id='login_username']")
+
+logelement$sendKeysToElement(list("vet.m.mohamed@gmail.com", key = "enter"))
+
+passelemnt<-rmDrive$findElement(using = "xpath",value = "//div/input[@id='login_password']")
+
+passelemnt$sendKeysToElement(list("salsa2762013",key="enter"))
+
+authelement<-rmDrive$findElement(using = "xpath",value = "//div/input[@id='login_deviceAuthorization_answer']")
+
+authelement$sendKeysToElement(list("osama",key="enter"))
+```
+
+load more click
+```{r load more}
+loadelemnt<-rmDrive$findElement(using = "xpath",value = "//footer/button[@id='load-more-button']")
+
+
+#click load more for 10 time 
+sum<-0
+repeat{
+        Sys.sleep(time = 5)
+        loadelemnt$clickElement()
+        sum=sum+1
+        if(sum==10){
+                break()
+        }
+}
+```
+
+collecting the title 
+
+```{r title}
+titleelemnt<-rmDrive$findElements(using = "xpath",value = "//div/h4/a[@class='job-title-link break visited ng-binding']")
+
+titles<-sapply(titleelemnt,function(x){
+        x$getElementText()
+})
+
+
+titles<-data.frame(cbind(titles))
+
+View(titles)
+```
+
+tags collection
+
+```{r tags}
+parenttagelemenet<-rmDrive$findElements(using = "xpath",value = "//job-tile-responsive/div[@class='ng-scope']")
+
+tagelements<-sapply(parenttagelemenet,function(x){
+       tryCatch( x$findChildElement(using="xpath",value="//job-tile-responsive/div/div/div/div[@class='js-skills skills']"),error=function(err){NA})
+})
+
+tags<-sapply(tagelements,function(x){
+        x$getElementText()
+})%>%cbind()
+
+View(tags)
+```

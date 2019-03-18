@@ -1,0 +1,346 @@
+---
+title: "ESEM and CFA Comparison in Measurement Invariance"
+author: "Mo'men Mohamed"
+date: "March 15, 2019"
+output: html_document
+---
+This project is a Comparison between ESEM and CFA methods to test the measurement invariance of 213 Egyptian students on Big five personality scale (30 items) 
+
+**Plz Feel Free to messege me for any advice or recommendations at vet.m.mohamed@gmail.com**
+        
+Loading the important package
+
+```{r lib,message=F,warning=FALSE}
+library(lavaan) ; library(GPArotation) ; library(knitr) ; library(knitLatex) ; library(readxl) ; library(ggplot2) ;library(tidyr) ; library(dplyr) ; library(magrittr) ; library(car) ; library(psych) ; library(kableExtra) ; library(semPlot) ; library(semTools)
+```
+
+Reading the data and importing it 
+
+```{r import}
+big<-read_excel(path = "./data sets/big5.xlsx")
+```
+
+Looking at the data structure 
+
+```{r str}
+str(big)
+```
+
+We need to remove "serial" and convert "sex" to factor Male and female
+
+
+```{r modi}
+big<-big[,-1]
+
+big$Sex<-factor(x = big$Sex,levels = c(1,2),labels = c("male","female"))
+
+kable(head(big),format = "markdown")
+```
+
+
+Now lets look at some summary for the data over all 
+
+```{r summ}
+summary(big) #Foor accurecy, out bound items and missing data 
+
+```
+
+Great , the there is no out of bound items or missing data , and the number of males and females is all most equal 
+
+
+The normality and linearity assumption is critical for Factor analysis and SEM , So, Lets test it 
+
+
+```{r Normality}
+#Testing Multivariate Normality using QQplot From fake regression on random normal variable
+set.seed(0124)
+rn<-rnorm(n = nrow(big))
+lm<-lm(rn~.,data = big[,-c(1,2)])
+
+plot(lm,1) #Homogeniety
+
+qqPlot(lm) # Normality and linearity
+
+```
+
+From The QQplot we can see that we can assume the normality and linearity of the data !!
+
+
+The following steps include conducting EFA
+
+Lets start :
+
+Firstly lets test the assumptions : **Additivity**  ,  **sample adequacy**
+
+```{r EFA assumptions}
+
+#Additivity 
+
+corr<-cor(x = big[,-c(1,2)],method = "p")
+
+kable(corr,digits = 2,format = "markdown") #correlation table
+
+corr%>%apply(MARGIN = 2,function(x){
+any(x<1&x>=abs(.9))
+}) #Testing if there are a correlation over .9 between the items to avoid multicolinearity 
+
+#Enough correlation & Sample adequacy
+cortest.bartlett(R = corr,n = nrow(big))$p.value#correlation bartelett test 
+
+KMO(corr)$MSA #Kaiser-Meyer-Olkin test 
+
+```
+
+since the assumptions have been met ( sig cor Bartlett and MSA >.8 and no additive ), Now we can run EFA
+
+
+AS there are a priori theory which assume the presence of 5 factors on which the items load in unique way , there is no need to test the number of factors 
+
+but lets do it for fun !!
+
+```{r No.FAC}
+facno<-fa.parallel(x = big[,-c(1,2)],fm = "ml",fa = "fa") # as th data is normal , we choosed the Muximum likelihood method of Extraction 
+```
+
+The parallel test suggest 5 factors !! agreeing with the theory , but for fancy lets look  at scree plot & Kaiser Criterion 
+
+```{r scree}
+(facno$fa.values>.7)%>%sum() #Kaiser criterion suggest 5 Factors !!
+
+plot(facno) #Scree plot Suggest 4 Factors with almost more one !!
+
+```
+
+As we see that Kaiser criterion of Eigen value suggest 5 factors and scree suggests 4 and almost one !! so we will consider those 5 !!
+
+```{r factor Extraction}
+fit<-fa(r = big[,-c(1,2)],nfactors = 5,rotate = "geominQ",fm = "ml") 
+fa.diagram(fit,main = "diagram illustrating the EFA Model")
+```
+
+The theory says that the factors are uncorrelated and it is supposed to use *"Orthogonal"* rotation Neverthless we will use *oblique (oblimin geomin) Rotation* , which allows the factors to correlate and that to match the default rotation method in *M-Plus* for *ESEM* 
+and also since the data is normal , so we used *maximum likelihood* Extraction method 
+
+```{r loading & correltions}
+fit$loadings%>%matrix(ncol = 5,dimnames = list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%kable(format = "markdown",digits = 3,caption = "Factor Items loading",row.names = T)
+
+fit$r.scores%>%matrix(nrow = 5,dimnames = list(c(paste0("f",1:5)),c(paste0("f",1:5))))%>%kable(format = "markdown",digits = 3,caption = "factor correlation")
+
+```
+
+at the tables above we see the factor-items loadings and factors correlations 
+
+we need to know if there are any significant cross loading of any of the items 
+
+```{r cross}
+
+load<-fit$loadings%>%matrix(ncol = 5,dimnames = list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%round(digits = 3)
+
+load%>%apply(MARGIN = 2,FUN = function(x){
+ifelse(test = x>=.3,yes = x,no = paste("-"))
+})%>%matrix(ncol = 5,dimnames =list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%kable(format = "markdown",digits = 3)
+
+```
+
+in the loading detection table we see that item O8 which is supposed to load on to factor 5 , loads on factor 1
+
+here i feel free to delete this item especially as we have another 5 items in its factor
+
+```{r item delete}
+big<-big%>%select(-O8)
+```
+
+and then run EFA again 
+
+
+```{r EFA again}
+fit<-fa(r = big[,-c(1,2)],nfactors = 5,rotate = "geominQ",fm = "ml") 
+fa.diagram(fit,main = "diagram illustrating the EFA Model")
+
+load<-fit$loadings%>%matrix(ncol = 5,dimnames = list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%round(digits = 3)
+
+load%>%apply(MARGIN = 2,FUN = function(x){
+ifelse(test = x>=.3,yes = x,no = paste("-"))
+})%>%matrix(ncol = 5,dimnames =list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%kable(format = "markdown",digits = 3)
+
+```
+
+Now it is awesome , we have here a great factors structure 
+
+So, lets test the reliability of each dimension using alpha
+
+```{r alpha,message=F,warning=F}
+F1<-big%>%select(E1,E2,E3,E4,E6,E7)
+F2<-big%>%select(N1,N2,N3,N5,N8,N9)
+F3<-big%>%select(A1,A2,A3,A4,A5,A6)
+F4<-big%>%select(O2,O3,O4,O5,O6)
+F5<-big%>%select(C3,C4,C5,C6,C7,C8)
+
+dimenstions<-list(F1,F2,F3,F4,F5)
+
+alphas<-data.frame(test=psych::alpha(check.keys = T,big%>%select(-c(Age,Sex)))$total[1],
+                   F1=psych::alpha(F1)$total[1],
+                   F2=psych::alpha(F2)$total[1],
+                   F3=psych::alpha(F3)$total[1],
+                   F4=psych::alpha(F4)$total[1],
+                   F5=psych::alpha(F5)$total[1])
+
+names(alphas)<-c("All test",paste("F",1:5))
+alphas%>%kable(format = "markdown",digits = 2) # table contain row alpha for the all items and every factor
+```
+
+here the alpha values of each factor is roughly good , so we can claim here that the dimensions is reliable 
+
+
+After finishing the EFA lets start in CFA and Confirming the structure of the model 
+
+First of all we have to specify the model
+
+```{r specify}
+bigmodel<-"
+f1=~E1+E2+E3+E4+E6+E7
+f2=~N1+N2+N3+N5+N8+N9
+f3=~A1+A2+A3+A4+A5+A6
+f4=~O2+O3+O4+O5+O6
+f5=~C3+C4+C5+C6+C7+C8
+"
+```
+
+
+After specifying the model we will use `cfa()` function to run the model
+
+```{r run the model}
+bigfit<-cfa(model = bigmodel,data = big%>%select(-c(Age,Sex)))
+
+summary(bigfit,standardized=T,fit.measures=T)
+
+semPaths(bigfit,whatLabels = "std",layout = "tree")
+
+```
+
+The number of DF in our model is *406* and the number of parameters estimated are *73* so, the remaining df are *367* and we have an over identified model
+
+The following is the table of all parameters estimated 
+
+```{r para table}
+parameterEstimates(bigfit,standardized = T)%>%kable(digits = 2,format = "markdown")
+
+```
+
+
+All Loaings are so good and all of them are significant but we have an issue with the correlation between the factors which supposed to be low , but here is so high and significant
+
+
+Now lets look to the measurement fit indecies table
+
+```{r fit}
+c(fitmeasures(object = bigfit,fit.measures = c("chisq","df","cfi","tli","rmsea","rmsea.ci.upper","rmsea.ci.lower")))%>%round(digits = 3)%>%data.frame()%>%t()%>%kable(format = "markdown")
+
+```
+
+the model has a good measures as *CFI* is moderate as well as *TLI*
+
+but *RMSEA* is very good with Excellent Interval 
+
+The only issue in the model is the high correlation of the factors
+
+**Now** Lets try building the model by **ESEM** Methods and see the difference between it and traditional **CFA**
+
+```{r ESEM}
+esemmodel<-vector()
+
+for(i in 1:5){
+esemmodel[i]<-paste0("f",i,"=~",paste0(c(load[,i]),"*",names(load[,1]),collapse = "+"))
+}
+
+esemmodel<-paste0(esemmodel,collapse = "\n") #Model Specification
+
+esemfit<-cfa(model = esemmodel,data = big[,-c(1,2)]) #fitting the model
+
+all.fit<-rbind(c(fitmeasures(object = bigfit,fit.measures = c("chisq","df","cfi","tli","rmsea","rmsea.ci.upper","rmsea.ci.lower")))%>%round(digits = 3)%>%data.frame()%>%t(),c(fitmeasures(object = esemfit,fit.measures = c("chisq","df","cfi","tli","rmsea","rmsea.ci.upper","rmsea.ci.lower")))%>%round(digits = 3)%>%data.frame()%>%t())%>%data.frame()
+
+rownames(all.fit)<-c("CFA","ESEM")
+
+all.fit%>%kable(format = "markdown")
+```
+
+SEE !! The fit measures improved a lot in case of ESEM method 
+
+Now lets look at the correlation between the factors 
+
+```{r factor corr}
+data.frame(parameterestimates(object = esemfit,standardized = T))[180:189,c(1:3,11)]%>%kable(digits = 3,row.names = F,format = "markdown")
+```
+
+Here we can find the model match the theory as the factors are almost uncorrelated (Except f2~f3 , f2~f5 ) !!
+
+**Now** I Think that it is time of exploring the measurement invariance using the two method 
+
+##1- CFA Method 
+
+```{r config inv,warning=F,message=F}
+
+scalarfit<-cfa(model = bigmodel,data = big[,-c(1)],group = "Sex",group.equal = c("loadings","intercepts"))
+
+measurementInvariance(model=bigmodel,data=big[,-c(1)],strict = T,group="Sex")
+
+```
+
+Here we see that we can't prove the scalar invariance because of the difference between it and metric invariance in **CFI** >.01 
+
+So, we have to test the partial invariance using *freeing a parameter one-by-one* method 
+
+```{r free test}
+
+inter<-paste0(c(names(load[,1])),"~",1)
+
+chi.diff<-list()
+
+for(i in inter){
+        test2<-cfa(model = bigmodel,
+                   data = big[,-c(1)],
+                   group = "Sex",
+                   group.equal = c("loadings","intercepts"),
+                   group.partial = i)
+        chi.diff[[i]]<-c(i,fitmeasures(scalarfit,fit.measures = "chisq")-fitmeasures(test2,fit.measures = "chisq"))
+}
+
+chi.diff<-data.frame(chi.diff)%>%t()%>%data.frame()
+
+names(chi.diff)<-c("intercept","chi-difference")
+
+chi.diff<-chi.diff%>%mutate(`chi-difference`=as.character(`chi-difference`))%>%mutate(`chi-difference`=as.numeric(`chi-difference`))
+
+chi.diff[order(chi.diff$`chi-difference`,decreasing = T),]%>%kable(digits = 3,format = "markdown",row.names = F,align = "c")
+```
+
+OK, the intercept of item `O3` has the big change in chisq , so, lets let it free and test partial measurement invariance 
+
+```{r partial invariance,message=F,warning=F}
+measurementInvariance(model=bigmodel,data=big[,-c(1)],strict = T,group="Sex",group.partial = "O3~1")
+```
+
+Congrats !! only `O3` is the differential item functioning , and the measurement is *partially invariant* with *Equal mean* across groups using TRADITIONAL CFA method 
+
+
+
+##2- ESEM Method
+
+lets judge on the measurement invariance using this new method and see how it acts differently!!
+        
+```{r esem invariance,warning=FALSE,message=FALSE}
+measurementInvariance(model=esemmodel,data=big[,-1],strict = T,group="Sex")
+
+```
+
+See !! The measurement invariance is perfect at all levels with difference in **CFI** <.01 in all models and also with better fit measures. 
+
+And here with ESEM we can stop at this point and say that there are a complete measure invariance in All Levels (Config. weak. strong. strict. means) of invariance measurement 
+
+Finally lets make conclusion about our results of the two methods 
+
+|Comparison facet | CFA | ESEM |
+|:---------------|:----------------------------------------------|:----------------------------------------------|
+|Model fit | The fit measures in CFA was poor compared to ESEM , CFI(.87)| The model here is very good with high CFI(0.974) and difference from CFA model is CFI > .01 and this is significant |
+|Factors correlation | The factor correlation here doesn't match the theory as it is supposed to be uncorrelated | The correlation here is more better since most of factors uncorrelated |
+|measurement invariance | The Model was good in proving the partial invarince (config , weak , strong , mean) | A conclusion of complete measurement invariance with better fit measures |

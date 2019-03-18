@@ -1,0 +1,107 @@
+---
+title: "2nd order latent"
+author: "Mo'men Mohamed"
+date: "March 17, 2019"
+output: html_document
+---
+
+loading the libraries 
+
+```{r lib}
+library(lavaan) ; library(magrittr) ; library(dplyr) ; library(tidyr) ; library(GPArotation) ; library(knitr) ; library(car) ; library(psych)
+```
+
+loading the data sets 
+
+```{r load}
+order<-read.csv(file = "./data sets/2order.csv")
+
+head(order)%>%kable(format = "markdown")
+```
+
+testing the accuracy
+
+```{r accu}
+summary(order)
+```
+
+testing normality and linearity
+
+```{r testing}
+
+set.seed(444)
+faker<-rnorm(n = nrow(order))
+
+fakelm<-lm(faker~.,data = order)
+
+plot(fakelm,1)
+
+plot(fakelm,2)
+
+hist(rstudent(fakelm))
+```
+
+testing additivity and sample adequacy
+
+
+```{r assum}
+symnum(x = order%>%cor(method = "p"))%>%kable(format = "html")
+
+
+KMO(order)
+```
+
+testing the number of factors
+```{r nfactor}
+nfactor<-fa.parallel(x = order,fm = "ml",fa = "fa")
+
+plot(nfactor)
+
+(nfactor$fa.values>.7)%>%sum()
+```
+
+running EFA
+
+```{r run}
+efa<-fa(r = order,rotate = "oblimin",fm = "ml",nfactors = 3)
+efa$loadings%>%apply(MARGIN = 2,FUN = function(x){
+        ifelse(x>=.3,yes = x,no = "-")
+})%>%matrix(ncol = 3,dimnames = list(c(names(order)),c("f1","f2","f3")))%>%kable(format = "markdown",digits = 3,align = "c")
+```
+
+```{r model build}
+model<-"
+D=~Q3+Q3+Q5+Q10+Q13+Q16+Q17+Q21
+A=~Q2+Q4+Q7+Q9+Q15+Q19+Q20
+S=~Q1+Q6+Q8+Q11+Q12+Q14+Q18
+"
+
+cfafit<-cfa(model = model,data = order)
+
+summary(cfafit,fit.measures=T,standardized=T)
+
+```
+
+The covariance and correlation is too high , lets try second order factor model 
+
+```{r sec mod}
+sec.model<-paste0(model,"gf=~D+A+S",collapse = "/n")
+
+sec.fit<-cfa(model = sec.model,data = order)
+
+summary(sec.fit,standardized=T,fit.measures=T)
+```
+
+The two models are identical 
+
+Testing bifactor model 
+
+```{r bi}
+bimodel<-paste0(model,paste0("gf=~",paste0(names(order),collapse = "+")),collapse = "/n")
+
+bifit<-cfa(bimodel,data = order,orthogonal=T,std.lv=T)
+
+summary(bifit,fit.measures=T)
+
+semPlot::semPaths(bifit)
+```

@@ -1,0 +1,81 @@
+---
+title: "Path Analysis Model 2"
+author: "Mo'men Mohamed"
+date: "March 10, 2019"
+output: html_document
+---
+
+This Model From *Latent Variable Modeling Using R* Book 
+For Any Advice feel free to contact me at : vet.m.mohamed@gmail.com
+
+The following Image is the Model which we are going to work on 
+
+![](D:\Data Science\STATS TUTORIAL & PRACTICE\statstools\SEM\Path2.png)
+
+First of all we have to load all libraries which might be useful 
+
+```{r lib}
+library(lavaan)
+library(semPlot)
+library(knitr)
+
+```
+Now lets save the correlation matrix and preparing it for analysis 
+
+```{r cor}
+corr<-c(1.000,				
+        0.178,	1.000,			
+        0.230,	0.327,	1.000,		
+        0.106,	0.245,	0.183,	1.000,	
+        0.195,	0.356,	0.721,	0.178,	1.000)
+
+#convering it to complete matrix 
+
+corr<-lav_matrix_lower2full(corr)
+
+rownames(corr)<-colnames(corr)<-c("R","SES","CA","ST","AC")
+
+print(corr)
+```
+
+Now is the time for our model specification :
+
+```{r mod1}
+model<-"
+AC~ST+CA+SES+R
+ST~CA+SES+R
+CA~SES+R
+SES~R
+
+CA~~1*CA
+AC~~AC
+ST~~1*ST
+"
+```
+
+After Specifying the model lets run it in cfa() function
+
+```{r mod run}
+fit<-cfa(model = model,sample.cov = corr,sample.nobs = 18058)
+
+#lets look at the model coef.
+
+summary(fit,standardized = T)
+
+```
+
+as we see here that all coefficient are significant and it is standerdaized as we built the model on correlation matrix 
+
+some loadings are high and some are low but all of these are significant 
+
+lets look at the fit measures 
+
+```{r fit }
+fitmeasures(fit,fit.measures = c("chisq","df","cfi","tli","rmsea","rmsea.ci.upper","rmsea.ci.lower"))
+```
+
+though the model is just identified due to 0 df but CFI and TLI and even RMSEA is perfect 
+
+```{r plotting}
+semPaths(object = fit,whatLabels = "par",layout = "spring")
+```

@@ -1,0 +1,13 @@
+---
+title: "Untitled"
+author: "Mo'men Mohamed"
+date: "March 12, 2019"
+output: html_document
+---
+
+```{r}
+library(xtable)
+library(magrittr)
+xtable(iris,"latex")%>%print()
+library(knitr)
+```
