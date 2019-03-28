@@ -157,7 +157,7 @@ and then run EFA again
 fit<-fa(r = big[,-c(1,2)],nfactors = 5,rotate = "geominQ",fm = "ml") 
 fa.diagram(fit,main = "diagram illustrating the EFA Model")
 
-load<-fit$loadings%>%matrix(ncol = 5,dimnames = list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%round(digits = 3)
+load<-fit$loadings%>%matrix(ncol = 5,dimnames = list(c(names(big[,-c(1,2)])),paste0("F",1:5)))%>%zapsmall(digits = 2)%>%round(digits = 3)
 
 load%>%apply(MARGIN = 2,FUN = function(x){
 ifelse(test = x>=.3,yes = x,no = paste("-"))
@@ -344,3 +344,13 @@ Finally lets make conclusion about our results of the two methods
 |Model fit | The fit measures in CFA was poor compared to ESEM , CFI(.87)| The model here is very good with high CFI(0.974) and difference from CFA model is CFI > .01 and this is significant |
 |Factors correlation | The factor correlation here doesn't match the theory as it is supposed to be uncorrelated | The correlation here is more better since most of factors uncorrelated |
 |measurement invariance | The Model was good in proving the partial invarince (config , weak , strong , mean) | A conclusion of complete measurement invariance with better fit measures |
+
+
+
+
+
+```{r}
+fa<-factanal(x = big2,factors = 5,rotation = "geominQ",control = list(eps=.05))
+fa$loadings%>%matrix(ncol = 5)%>%kable(format = "markdown")
+
+```

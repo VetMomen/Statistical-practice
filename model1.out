@@ -1,0 +1,81 @@
+Mplus VERSION 7.11 DEMO
+MUTHEN & MUTHEN
+03/22/2019   1:39 AM
+
+INPUT INSTRUCTIONS
+
+  TITLE: ESEM Model 01;
+  DATA: FILE = ESEM.dat ;
+  VARIABLE: NAMES =
+  X1 X2 X3 X4 X5 X6 Y1 Y2 Y3 Y4 Y5 Y6 TbyG gender treat
+  ;
+
+
+  usevariables
+  X1 X2 X3 X4 X5 X6 Y1 Y2 Y3 Y4 Y5 Y6
+  ;
+  MISSING=.;
+
+  grouping is  TbyG ( 1 = treatM 2 = contM 3 = treatF 4 = contF ) ;
+
+
+  ANALYSIS: estimator=ml; ROTATION =  GEOMIN(OBLIQUE, .5) ;
+
+
+  Model  :
+  !FactorLoadings
+  F1-F2 BY X1-Y6(*1);
+  !Means
+  [F1-F2@0];
+  !Intercepts
+  [X1-Y6];
+
+  Model contM :
+  !FactorLoadings
+  F1-F2 BY X1-Y6(*1);
+  !Means
+  [F1-F2@0];
+  !Intercepts
+  [X1-Y6];
+
+  Model treatF :
+  !FactorLoadings
+  F1-F2 BY X1-Y6(*1);
+  !Means
+  [F1-F2@0];
+  !Intercepts
+  [X1-Y6];
+
+  Model contF :
+  !FactorLoadings
+  F1-F2 BY X1-Y6(*1);
+  !Means
+  [F1-F2@0];
+  !Intercepts
+  [X1-Y6];
+
+
+  OUTPUT: TECH1;
+
+
+DEMO VERSION MAXIMUM EXCEEDED
+  Maximum number of dependent variables has been exceeded.
+  Number of dependent variables in the model: 12
+
+
+Mplus VERSION 7.11 DEMO has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2013 Muthen & Muthen

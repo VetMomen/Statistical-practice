@@ -1,0 +1,156 @@
+---
+title: "Full SEM"
+author: "Mo'men Mohamed"
+date: "March 18, 2019"
+output: html_document
+---
+
+loading libraries
+
+```{r lib}
+library(lavaan) ; library(tidyr) ; library(dplyr) ; library(magrittr) 
+```
+
+#Model (1)
+
+![](C:\Users\SHiFT\Documents\Statistical-practice\Picture1.png)
+
+writing the covariance struture
+
+```{r cov}
+cor1<-c(1.00, 
+       .74,	1.00,	
+       .27,	.42,	1.00,	
+       .31,	.40,	.79,	1.00,	
+       .32,	.35,	.66,	.59,	1.00)
+
+#converting it to full matrix 
+
+cor1<-lav_matrix_lower2full(cor1)
+
+#SDs of all variables 
+sd.cor1 = c(32.94,	22.75,	13.39,	13.68,	14.38)
+
+
+#Naming the matrix 
+
+rownames(cor1) <- colnames(cor1) <- names(sd.cor1) <- c("father", "mother", "famo", "problems", "intimacy" )
+
+#convert cor to covariance 
+
+cov1<-cor2cov(cor1,sd.cor1)
+
+```
+
+building the model 
+
+```{r model}
+names<-names(sd.cor1)
+model1<-"
+MA=~problems+intimacy
+FO=~father+mother+famo
+"
+```
+
+running complete SEM model 1
+
+```{r sem}
+fit1<-sem(model = model1,sample.cov = cov1,sample.nobs = 203) #warnings !! , lets do inspection 
+
+lavInspect(fit1, "cor.lv") #having a eywood case , out bound correlation , but lets run the summary and see the results 
+
+summary(fit1,standardized=T,fit.measures=T)
+
+semPlot::semPaths(fit1,"std")
+
+modindices(fit1,sort. = T)
+
+#running the model again with std latents 
+
+fitstd<-sem(model = model1,sample.cov = cov1,sample.nobs = 203,std.lv=TRUE)
+
+
+summary(fitstd,standardized=T,fit.measures=T)
+
+fitted(fitstd) ##look at cov table
+residuals(fitstd) ##look at residuals
+fitmeasures(fitstd)
+
+```
+
+Now lets run the second model with correlated latents
+
+```{r model 2}
+model2 <- '
+adjust =~ problems + intimacy
+family =~ father + mother + famo
+adjust~family
+'
+```
+
+running the model 2 
+
+```{r fitting model2}
+fit2<-sem(model = model2,sample.cov = cor1,sample.nobs = 203)
+
+
+#inspecting the error 
+inspect(fit2,"cor.lv")
+
+summary(fit2,standardized=T,fit.measures=T,rsquare=T)
+
+semPlot::semPaths(fit2,"std",layout = "circle")
+```
+
+
+as we see here that the model is too bad and need to explore more variables adding them to the model 
+
+#Model (2)
+
+![](C:\Users\SHiFT\Documents\Statistical-practice\Picture2.png)
+
+adding the correlation matrix and processing it
+
+```{r corr}
+
+cor2<-c(1.00, 
+        .42,	1.00, 
+        -.43,	-.50,	1.00, 
+        -.39,	-.43,	.78,	1.00,	
+        -.24,	-.37,	.69,	.73,	1.00, 
+        -.31,	-.33,	.63,	.87,	.72,	1.00,	
+        -.25,	-.25,	.49,	.53,	.60,	.59,	1.00, 
+        -.25,	-.26,	.42,	.42,	.44,	.45,	.77,	1.00,	
+        -.16,	-.18,	.23,	.36,	.38,	.38,	.59,	.58, 1.00)
+
+sd.cor2 = c(13.00,	13.50,	13.10,	12.50,	13.50,	14.20,	9.50,	11.10,	8.70)
+
+cor2<-lav_matrix_lower2full(cor2)
+
+colnames(cor2)<-rownames(cor2)<-names(sd.cor2)<-c("parent_psych","low_SES","verbal","reading","math","spelling","motivation","harmony","stable")
+
+cov2<-cor2cov(R = cor2,sds = sd.cor2)
+```
+
+running the  model
+
+```{r simplest model}
+
+complexmodel<-"
+
+risk<~parent_psych+low_SES+verbal
+adj=~motivation+harmony+stable
+ach=~reading+math+spelling
+risk=~ach+adj
+"
+
+complexfit<-sem(model = complexmodel,sample.cov = cov2,sample.nobs = 158)
+
+summary(complexfit,standardized=T,fit.measures=T,rsquare=T)
+
+semPlot::semPaths(complexfit,"std")
+
+fitted(complexfit)
+
+residuals(complexfit)
+```
