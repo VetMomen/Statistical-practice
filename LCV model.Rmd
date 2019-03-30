@@ -1,0 +1,166 @@
+```{r lib}
+library(tidyverse)
+library(lavaan)
+library(knitr)
+library(readxl)
+
+```
+
+
+loading the data
+
+```{r load}
+
+dat = lav_matrix_lower2full(c(.63, 
+                                    .50, .60, 
+                                    .48, .48, .58, 
+                                    .47, .48, .51, .67))
+
+means = c(5.17, 5.32, 5.40, 5.52)
+
+names(means) = 
+  rownames(dat) = 
+  colnames(dat) = c("time1", "time2", "time3", "time4")
+
+n=952
+```
+
+building the first model --> only intercept without variance 
+```{r model1 }
+
+
+model1<-"
+#the model
+i=~1*time1+1*time2+1*time3+1*time4
+
+#zero Variance
+i~~0*i
+
+#fixing the residuals
+
+time1~~r*time1
+time2~~r*time2
+time3~~r*time3
+time4~~r*time4
+"
+
+fit1<-growth(model = model1,sample.cov = dat,sample.nobs = n,sample.mean = means)
+
+summary(fit1,standardized=T,fit.measures=T,rsquare=T)
+
+measures1<-fitmeasures(fit1,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures1
+```
+
+in model 2 --> unconstrain the variance of intercept
+
+```{r model 2}
+
+model2<-"
+#the model
+i=~1*time1+1*time2+1*time3+1*time4
+
+#fixing the residuals
+
+time1~~r*time1
+time2~~r*time2
+time3~~r*time3
+time4~~r*time4
+"
+
+fit2<-growth(model = model2,sample.cov  = dat,sample.nobs = n,sample.mean = means)
+
+summary(fit2,standardized=T,fit.measures=T,rsquare=T)
+
+measures2<-fitmeasures(fit2,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures2
+```
+
+model 2 is better than model one as we permitted the sample to start from different points 
+
+```{r model3}
+
+model3<-"
+#the model
+i=~1*time1+1*time2+1*time3+1*time4
+s=~0*time1+1*time2+2*time3+3*time4
+
+#zero Variance
+s~~0*s
+i~~0*s
+
+#fixing the residuals
+
+time1~~r*time1
+time2~~r*time2
+time3~~r*time3
+time4~~r*time4
+"
+fit3<-growth(model = model3,sample.cov  = dat,sample.nobs = n,sample.mean = means)
+
+summary(fit3,standardized=T,fit.measures=T,rsquare=T)
+
+measures3<-fitmeasures(fit3,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures3
+```
+
+in model 3 we added slop but with zero variance and uncorrelated with intercept and it is better than the second model
+
+```{r model4}
+model4<-"
+#the model
+i=~1*time1+1*time2+1*time3+1*time4
+s=~0*time1+1*time2+2*time3+3*time4
+
+#fixing the residuals
+
+time1~~r*time1
+time2~~r*time2
+time3~~r*time3
+time4~~r*time4
+"
+fit4<-growth(model = model4,sample.cov  = dat,sample.nobs = n,sample.mean = means)
+
+summary(fit4,standardized=T,fit.measures=T,rsquare=T)
+
+measures4<-fitmeasures(fit4,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures4
+
+```
+
+in model 4 we let the slop with intercept to vary 
+and it is better than model 3
+
+```{r model 5}
+
+model5<-"
+#the model
+i=~1*time1+1*time2+1*time3+1*time4
+s=~0*time1+1*time2+2*time3+3*time4
+
+"
+fit5<-growth(model = model5,sample.cov  = dat,sample.nobs = n,sample.mean = means)
+
+summary(fit5,standardized=T,fit.measures=T,rsquare=T)
+
+measures5<-fitmeasures(fit5,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures5
+
+
+```
+
+in the model 5 it doesn't changed after model 4 and it means that the residuals are still constant 
+
+
+```{r total fit}
+total.fit<-rbind(measures1,measures2,measures3,measures4,measures5)
+
+rownames(total.fit)<-c(paste0("model",1:5))
+
+total.fit%>%kable("markdown",digits = 3)
+```

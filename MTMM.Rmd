@@ -1,0 +1,140 @@
+---
+title: "MTMM"
+author: "Mo'men Mohamed"
+date: "March 29, 2019"
+output: html_document
+---
+
+```{r lib,message=F,warning=F}
+library(tidyverse)
+library(lavaan)
+library(knitr)
+```
+
+reading the data
+
+```{r read}
+dir<-file.path(choose.dir(),"mtmm example.csv")
+dat<-read.csv(dir)
+
+head(dat)%>%kable("markdown")
+```
+
+building the model
+```{r model}
+model1 = '
+
+mlq =~ m1+m2+m3+m4+m5+m6+m8+m9+m10
+pil =~ p3+p4+p8+p12+p17+p20
+
+meaning =~ m1 + m2 + m5 + m10 + p4 + p12 + p17
+purpose =~ m3 + m4 + m6 + m8 + m9 + p3 + p8 + p20
+
+##fix the covariances
+mlq~~0*meaning
+pil~~0*meaning
+mlq~~0*purpose
+pil~~0*purpose
+'
+
+fit1<-cfa(model = model1,data=dat,std.lv=TRUE)
+
+summary(fit1,standardized=T,fit.measures=T,rsquare=T)
+
+measures1<-fitmeasures(fit1,fit.measures = c("df","chisq","cfi","rmsea"))
+
+```
+
+
+Building the second model 
+
+```{r model2}
+
+model2<-"
+mlq =~ m1+m2+m3+m4+m5+m6+m8+m9+m10
+pil =~ p3+p4+p8+p12+p17+p20
+"
+
+
+fit2<-cfa(model2,dat,std.lv=T)
+
+summary(fit2,standardized=T,fit.measures=T,rsquare=T)
+
+measures2<-fitmeasures(fit2,fit.measures = c("df","chisq","cfi","rmsea"))
+```
+
+Here the Delta of CFI between model 1 and model 2 is >,01 and it indicates convergent validity
+
+Now lets see the third model at which we force the traits to be perfectly correlated 
+
+```{r model 3}
+
+model3<-"
+mlq =~ m1+m2+m3+m4+m5+m6+m8+m9+m10
+pil =~ p3+p4+p8+p12+p17+p20
+
+meaning =~ m1 + m2 + m5 + m10 + p4 + p12 + p17
+purpose =~ m3 + m4 + m6 + m8 + m9 + p3 + p8 + p20
+
+##fix the covariances
+mlq~~0*meaning
+pil~~0*meaning
+mlq~~0*purpose
+pil~~0*purpose
+
+##fix the traits to perfect correlation 
+
+meaning~~1*purpose
+"
+
+fit3<-cfa(model3,dat,std.lv=T)
+
+summary(fit3,standardized=T,fit.measures=T,rsquare=T)
+
+measures3<-fitmeasures(fit3,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures3
+```
+
+the model 3 is not worth that the first one and it indicate that we have a problem in discriminant validity of traits 
+
+the fourth model force the methods to be uncorrelated 
+
+```{r model4}
+
+model4<-"
+mlq =~ m1+m2+m3+m4+m5+m6+m8+m9+m10
+pil =~ p3+p4+p8+p12+p17+p20
+
+meaning =~ m1 + m2 + m5 + m10 + p4 + p12 + p17
+purpose =~ m3 + m4 + m6 + m8 + m9 + p3 + p8 + p20
+
+##fix the covariances
+mlq~~0*meaning
+pil~~0*meaning
+mlq~~0*purpose
+pil~~0*purpose
+
+##fix the methods to perfect be uncorrelation 
+
+mlq~~0*pil
+"
+fit4<-cfa(model4,dat,std.lv=T)
+
+summary(fit4,standardized=T,fit.measures=T,rsquare=T)
+
+measures4<-fitmeasures(fit4,fit.measures = c("df","chisq","cfi","rmsea"))
+
+measures4
+```
+
+the model 4 didn't changed and it is as good as model 1 and it indicates Discriminant validity of Methods 
+
+```{r fit collection}
+fit.collection<-rbind(measures1,measures2,measures3,measures4)
+
+rownames(fit.collection)<-c(paste0("measures",1:4))
+
+fit.collection%>%kable("markdown",digits = 3)
+
+```
