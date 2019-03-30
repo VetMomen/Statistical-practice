@@ -1,0 +1,226 @@
+---
+title: "Poly IRT"
+author: "Mo'men Mohamed"
+date: "March 30, 2019"
+output: html_document
+---
+
+```{r lib}
+library(mirt)
+library(tidyverse)
+library(knitr)
+library(ltm)
+library(psych)
+```
+
+loading the data 
+
+```{r load}
+data("LSAT")
+kable(LSAT%>%head,"markdown")
+
+poly<-read.csv("./data sets/poly irt.csv")
+
+poly<-na.omit(poly)
+head(poly)%>%kable("markdown")
+```
+Working on LSAT dichotomus data 
+
+loading the model
+
+```{r dich model}
+dimodel<-ltm(LSAT~z1,IRT.param = T)
+
+# see the model summary 
+
+summary(dimodel)
+
+#looking at the coefficients sololy 
+
+coef(dimodel)
+
+#lets Now plot the model ICC
+
+plot(dimodel,type="ICC")
+plot(dimodel,type="ICC",1)
+plot(dimodel,type="ICC",2)
+
+#Now IIC plotting 
+
+plot(dimodel,type="IIC",0)
+plot(dimodel,type="IIC",1)
+plot(dimodel,type="IIC",2)
+plot(dimodel,type="IIC",3)
+plot(dimodel,type="IIC",4)
+plot(dimodel,type="IIC",5)
+
+
+```
+
+
+we see that most information is is arround -1 z and from the curve we can see the information and goodness of each paramater to each item 
+
+Now lets look to the model in deep 
+
+looking to the factor scores , person fit , item fit 
+
+```{r deep}
+
+##seeing the pattern of responses and z value of the respondant theta 
+
+ltm::factor.scores(dimodel)
+
+##See each person pattern and his theta level and propapility 
+
+person.fit(dimodel)
+
+## Now see the propapility of the item doesn't fit the model --- > we want it non significant 
+
+item.fit(dimodel)
+
+```
+
+
+Now lets look at the 3 parameter model and see it it makes different !!
+
+
+```{r 3p}
+trimodel<-tpm(data = LSAT,IRT.param = T,type = "latent.trait")
+#see the summary
+
+summary(trimodel)
+
+#see coef
+
+coef(trimodel)
+
+#plotting
+
+plot(trimodel,type="ICC")
+
+plot(trimodel,type="IIC",0)
+
+
+#looking at the factor score
+
+ltm::factor.scores(trimodel)
+
+#looking at person score
+
+person.fit(trimodel)
+
+#looking at item fit 
+
+item.fit(trimodel)
+```
+
+Now lets test the difference between the two model
+
+```{r test}
+anova(dimodel,trimodel)
+
+```
+
+3 paramater model doesn't add any information , so we will keep model 2
+
+NOW its time to work on polytomus model 
+
+we will treat each factor alone : we hypothsize that the item unidimentional 
+
+```{r ploy}
+#reverse item 9
+
+poly$Q99_9<-8-poly$Q99_9
+
+#Now separate each factor items 
+
+factor1<-poly[,c(1, 4, 5, 6, 9)]
+factor2<-poly[,c(2, 3, 7, 8, 10)]
+
+#modeling factor 1
+polymodel1<-mirt(factor1,model = 1, #for one factor 
+                 itemtype= "gpcm",#generalized partial Credit model
+                 technical = list(removeEmptyRows=TRUE)) 
+
+# see the summary 
+
+summary(polymodel1)
+
+#seeing the coef
+coef(polymodel1,IRTpars=T) #parameter of each choice 
+
+#plotting the model
+
+itemplot(polymodel1,1,type="trace")# ICC
+itemplot(polymodel1,2,type="trace")# ICC
+itemplot(polymodel1,3,type="trace")# ICC
+itemplot(polymodel1,4,type="trace")# ICC
+itemplot(polymodel1,5,type="trace")# ICC
+
+
+itemplot(polymodel1,1,type="info") #IIC for each item
+itemplot(polymodel1,2,type="info")
+itemplot(polymodel1,3,type="info")
+itemplot(polymodel1,4,type="info")
+itemplot(polymodel1,5,type="info")
+
+
+plot(polymodel1,type="trace") #plotting all items ICC
+plot(polymodel1,type="info") #plotting all IIC
+
+
+
+```    
+
+Now lets see factor scores , person fit , item fit 
+
+```{r deeb}
+fscores(polymodel1)
+personfit(polymodel1)
+itemfit(polymodel1)
+```
+
+Now we will do the same for factor2
+
+
+```{r factor2}
+#modeling factor 2
+polymodel2<-mirt(factor2,model = 1, #for one factor 
+                 itemtype= "gpcm",#generalized partial Credit model
+                 technical = list(removeEmptyRows=TRUE)) 
+
+# see the summary 
+
+summary(polymodel2)
+
+#seeing the coef
+coef(polymodel2,IRTpars=T) #parameter of each choice 
+
+#plotting the model
+
+itemplot(polymodel2,1,type="trace")# ICC
+itemplot(polymodel2,2,type="trace")# ICC
+itemplot(polymodel2,3,type="trace")# ICC
+itemplot(polymodel2,4,type="trace")# ICC
+itemplot(polymodel2,5,type="trace")# ICC
+
+
+itemplot(polymodel2,1,type="info") #IIC for each item
+itemplot(polymodel2,2,type="info")
+itemplot(polymodel2,3,type="info")
+itemplot(polymodel2,4,type="info")
+itemplot(polymodel2,5,type="info")
+
+
+plot(polymodel2,type="trace") #plotting all items ICC
+plot(polymodel2,type="info") #plotting all IIC
+
+
+
+fscores(polymodel2)
+personfit(polymodel2)
+itemfit(polymodel2)
+
+
+```
+

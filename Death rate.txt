@@ -1,0 +1,110 @@
+# this project from [data.world](https://data.world/exercises/linear-regression-exercise-1/workspace/file?filename=avg-household-size.csv)
+# and the aim of this data to use multivariate OLS method to pridect the death rate 
+
+#First lets load our libraries 
+
+library(tidyverse)
+library(knitr)
+library(caret)
+library(car)
+library(psych)
+
+
+#download the data
+
+
+#loading it 
+
+data<-read.csv("./data sets/cancer.csv")
+
+head(data)
+
+#now lets look to the structure of the data 
+
+str(data)
+
+#here we have to note that the out come is count : count of death rate per year 
+# so we have to use poisson regression instead of OLS regression 
+#but for tutorial reason , I will use OLS instead of posson , then i will use poisson 
+
+#Now lets look at the at the accuracy of the data , and if there any modification need to be acheived 
+
+summary(data)
+#some variables need inspection like;:
+#avganncount
+#avgdeathsperyear
+#incidencerate
+#studypercap
+#popest2015
+#medincome
+#binnedinc
+#medianage
+#geography
+#pctsomecol18_24
+#pctbachdeg18_24
+#pctemployed16_over
+#pctprivatecoveragealone
+#pctasian
+#pctblack
+#pctotherrace
+#birthrate
+
+#Most of these variables has issue with outlier ( which may also indicate skewness) and large number of missing data 
+
+#So, lets first test the outlier percent and if we can impute it 
+#the outlier per variables must not Exceed 5%
+
+miss<-apply(data,2,function(x){
+        round((sum(is.na(x))/length(x))*100,2)
+})
+
+miss
+
+which(miss>.05)
+
+#here we have issue with some variables which has a missing variables >.05 like:
+
+#pctsomecol18_24 = 74.99%
+#pctprivatecoveragealone = 20%
+
+#here i have to Exclude these variables from out calculation 
+
+data<-data%>%select(-which(miss>.05))
+
+#summary again and outlier checking again 
+
+apply(data,2,function(x){
+        round((sum(is.na(x))/length(x))*100,2)
+})
+
+
+#great , and there is no need for any imputation 
+
+# the next station is checking for outliers
+#and the best way is to check for multivariate outlier using mahalanobis test
+
+#choosing the numeric variables 
+
+num<-data%>%select(-c(binnedinc,geography))
+
+
+#getting the mahalanobis value 
+
+mah<-mahalanobis(x = num,center = colMeans(num),cov = cov(num))
+
+#Now calculating the cutoff points 
+
+cutoff<-qchisq(p = .99,df = ncol(num))
+
+
+#lets open the surprise box :P
+
+summary(mah>cutoff)
+
+#now we have 342 case which considered multivariate outlier 
+
+#lets save it for later use 
+
+outidx<-which(mah>cutoff)
+
+#Now 

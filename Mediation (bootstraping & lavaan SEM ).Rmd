@@ -1,0 +1,154 @@
+---
+title: "Mediation ( Bootstraping & lavaan SEM )"
+author: "Mo'men Mohamed"
+date: "April 10, 2019"
+output: html_document
+---
+
+
+this is a tutorial about how to do basic mediation analysis 
+
+For any recommendation of advices plz feel free to contact me : vet.m.mohamed@gmail.com
+
+Need at first to load our libraries 
+
+```{r,message=F,warning=F}
+library(tidyverse)
+library(mediation)
+library(semPlot)
+library(knitr)
+library(caret)
+library(lavaan)
+```
+
+Now lets import our data and inspect it 
+
+```{r,eval=F}
+download.file(url = 'http://static.lib.virginia.edu/statlab/materials/data/mediationData.csv',destfile = "./data sets/medanalysis.csv")
+```
+
+```{r}
+data<-read.csv("./data sets/medanalysis.csv")
+
+head(data)
+```
+
+
+here we have three variables x and y and the mediator M between x and y
+
+first lets look at their features graphically befor starting analysis 
+
+```{r}
+plot(data)# seeing the corelation and linearity between each pairs
+
+
+par(mfrow=c(1,3))
+for(i in names(data)){
+        density(data[,i])%>%plot(main=paste("density plot of variable",i,sep = " "))
+} # seeing the normality of each variable
+
+par(mfrow=c(1,3))
+for(i in names(data)){
+        d<-jitter(data[,paste(i)],factor = 10)
+        qqnorm(d,main = paste("Normal QQ plot of",i,sep = " "))
+} #seeing the normality and linearity using QQ plot 
+
+```
+
+
+Now lets dive directly to mediation 
+
+1st model x~y
+
+```{r}
+fit1<-lm(Y~X,data=data)
+summary(fit1)
+```
+
+
+the first model is significant 
+
+now lets run the 2nd model m~x
+
+
+```{r}
+fit2<-lm(M~X,data=data)
+summary(fit2)
+```
+
+
+great this is also significant 
+
+Lets run the model 3 y~X+M --> adjusting for X
+
+
+```{r}
+fit3<-lm(Y~X+M,data)
+
+summary(fit3)
+```
+
+
+here , M is significant amd X reduced to be completely non significant 
+
+So we here in front of case of complete mediation 
+
+but we still need to test if this mediation effect is significant or not 
+
+So we will use bootstrabing method to test that 
+
+```{r,cache=T}
+medeffect<-mediate(model.m = fit2,model.y = fit3,sims = 1000,boot = T,boot.ci.type = "perc",treat = "X",mediator = "M")
+
+summary(medeffect)
+```
+
+
+here we see ACME : Average causal mediation Effect is significant ,
+and see that ADE : average direct effect is not significant 
+
+This indicate that the mediation effect is significant !!
+
+
+Now i want to test the nediation effect using Lavaan and structural equation modeling
+
+
+```{r}
+model<-"
+
+Y~a*X+b*M
+M~c*X
+#indirect effect
+ind:=b*c
+#total effect
+total:=a+(b*c)
+#prop med
+prop:=ind/total
+"
+```
+
+
+
+now run the model through cfa() function
+
+
+```{r}
+medsem<-cfa(model = model,data = data,se="bootstrap")
+
+summary(medsem,standardized=T,fit.measures=T,rsquare=T)
+
+semPaths(object = medsem,whatLabels = "std")
+```
+
+
+
+we see here in the summary that the p value of X incase of presence of M is not significant and it is the same of model fit3 
+
+also we see that the indirect Effect b*c is significant and the mediation effect is also significant 
+
+Finaly we can see that the total effect is significant and it is so close to the total effect estimated in the bootstraping p.value in mediation effect model 
+
+
+
+
+REGARDS

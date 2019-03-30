@@ -1,0 +1,106 @@
+---
+title: "BS Two way anova"
+author: "Mo'men Mohamed"
+date: "April 1, 2019"
+output: html_document
+---
+
+loading the libraries 
+
+```{r lib load}
+library(tidyverse)
+library(psych)
+library(ez)
+library(knitr)
+library(reshape)
+library(car)
+
+```
+
+loading the data 
+
+```{r data}
+bs2<-read.csv("./data sets/bn 2 anova.csv")
+bs2<-bs2%>%mutate(year=factor(year),type=factor(type))
+head(bs2)%>%kable("markdown")
+
+#know the factors levels 
+
+apply(bs2[,1:2],2,unique)
+```
+
+we have two factors :
+years : two years 
+sport : 5 levels 
+
+Note: testing power and sample size using G-power App
+and for small effect size , interaction df (2-1)*(5-1)=4
+and nuber of group (conditions) = 10 , with power .8 --> we need 126 sample size 
+
+Lets see the data summary 
+
+```{r summary}
+bs2%>%summary()
+
+
+# there is no out of bound cases and no missing value 
+
+```
+
+lets test outleir and normality 
+
+```{r out-norm}
+prp<-(pnorm(bs2$money,mean = mean(bs2$money,na.rm = T),sd = sd(bs2$money,na.rm = T)))
+
+bs2<-bs2[which(prp<.99&prp>.01),] #Exclude outliers
+
+#normality
+
+faker<-rchisq(n = nrow(bs2),df = 7)
+
+fakelm<-lm(faker~.,data = bs2)
+
+stdresid<-rstudent(fakelm)
+stdfit<-scale(fitted(fakelm))
+
+hist(stdresid)
+
+qqPlot(stdresid) # we have here a quadratic functuion 
+# but we still do the analysis 
+
+plot(stdresid,stdfit)%>%abline(h = 0)%>%abline(v = 0)
+
+#we have a serious problem in homogeneity and homoscadisticity 
+```
+
+testing the homogeneity
+
+```{r homo}
+bs2%>%na.omit()%>%
+        with(leveneTest(money~type*year)) #Not homogeneic data
+```
+
+Running anova
+
+```{r anova}
+bs2<-bs2%>%mutate(idx=1:nrow(bs2))
+head(bs2)
+
+
+bs2%>%with(ezANOVA(data = bs2,dv =money,wid = idx,between = c(year,type),type = 1))
+```
+
+the interaction is not significant 
+
+So, we will test the main effect only 
+
+between years and between type of game 
+
+
+```{r post hoc}
+bs2%>%with(pairwise.t.test(x = money,g = type,p.adjust.method = "bonferroni",paired = F,equal.var=F))
+
+bs2%>%with(pairwise.t.test(x = money,g = year,p.adjust.method = "bonferroni",paired = F,equal.var=F))
+
+```
+

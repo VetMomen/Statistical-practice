@@ -1,0 +1,125 @@
+---
+title: "Anova one way within subject"
+author: "Mo'men Mohamed"
+date: "March 31, 2019"
+output: html_document
+---
+
+```{r lib}
+library(psych)
+library(tidyverse)
+library(car)
+library(ggplot2)
+library(pwr)
+library(ez)
+library(knitr)
+```
+
+
+loading the data
+
+```{r load}
+rm<-read.csv("./data sets/rm 1 anova.csv")
+
+
+```
+
+at first lets determine the number of sample needed 
+
+```{r s size}
+#Use Gpower !!
+
+#the suggested sample size is 7
+
+```
+
+now it is time of data screening 
+
+```{r screen}
+summary(rm)
+#no outlier 
+
+mah<-mahalanobis(x = rm,center = colMeans(rm),cov = cov(rm))
+
+cut<-qchisq(p = .99,df = 3)
+
+(mah>cut)%>%any
+
+#no outlier
+
+#additivity
+
+symnum(cor(rm))
+
+#Expected high correlation but r not over .99
+
+
+```
+checking the normality by making fake regression 
+
+
+```{r fake}
+fakedata<-rchisq(n = nrow(rm),df = 7)
+fake<-rm%>%with(lm(fakedata~.,rm))
+
+qqPlot(rstudent(fake))
+
+#the data is sone what cubic but we still working on it
+
+
+plot(scale(fake$fitted.values),rstudent(fake))
+
+#homogeniety
+#transforming the data to long 
+rm$num<-factor(1:nrow(rm))
+longrm<-rm%>%gather("stage","Value",-num)%>%mutate(stage=factor(stage))
+
+longrm%>%with(leveneTest(Value~stage))
+
+
+#great we have here a homogeniec variables 
+
+
+
+
+```
+
+
+Runing anova analysis 
+
+
+```{r anova}
+longrm%>%with(ezANOVA(data = longrm,dv = Value,wid = num,within = stage))
+
+
+```
+
+the over all model is significant 
+so we have to use pairwise t test
+
+```{r pair}
+longrm%>%group_by(stage)%>%summarize(mean=mean(Value),sd=sd(Value),n=n())
+
+longrm%>%with(pairwise.t.test(x = Value,g = stage,p.adjust.method = "bonferroni",paired = T))
+
+
+```
+
+here we can see the difference inbetween all levels of measurement 
+
+```{r effect}
+#calculating effect size 
+first<-rm%>%select(neutral,positive)%>%gather("level","value")%>%mutate(level=factor(level))
+d1<-cohen.d(x = first,group = "level")$cohen.d%>%data.frame()
+
+second<-rm%>%select(negative,positive)%>%gather("level","value")%>%mutate(level=factor(level))
+d2<-cohen.d(x = second,group = "level")$cohen.d%>%data.frame()
+
+third<-rm%>%select(neutral,negative)%>%gather("level","value")%>%mutate(level=factor(level))
+d3<-cohen.d(x = third,group = "level")$cohen.d%>%data.frame()
+
+
+rbind(d1,d2,d3)%>%
+        kable("markdown")
+
+```

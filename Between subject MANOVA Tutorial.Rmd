@@ -1,0 +1,230 @@
+---
+title: "Between subject MANOVA Tutorial"
+author: "Mo'men Mohamed"
+date: "April 5, 2019"
+output: html_document
+---
+
+This a tutorial for doing between subject MANOVA
+
+you are welcome to contact me for any advice or recommendation at: vet.m.mohamed@gmail.com
+
+for Complete tutorial and data set see [here](http://statstools.com/learn/advanced-statistics/)
+
+
+first of all lets load libraries which we are going to use in this Analysis and clearing the work space
+
+```{r,message=F,warning=F}
+library(tidyverse)
+library(car)
+library(multcomp)
+library(ez)
+library(MOTE)
+library(psych)
+```
+
+Then lets import the data set
+
+```{r}
+data<-read.csv("./data sets/9 manova.csv")
+head(data)
+```
+
+lets take the analysis variables out 
+
+```{r}
+data<-data[,c("FEM","MASC","ESTEEM","ATTROLE","NEUROTIC")]
+```
+
+adding individual index
+
+```{r}
+data<-data%>%mutate(idx=1:n())
+```
+
+Now lets test the assumptions and the appropriateness of the data to MANOVA
+
+
+We will start by accuracy and missing data
+
+```{r}
+summary(data)
+```
+
+In Neurotic we have a large numbers of Na's 
+
+So we have to see the percentage of the missing data 
+
+```{r}
+apply(data,2,function(x){
+        sum(is.na(x))/length(x)
+})
+```
+We have here 17.8% of data in neurotic are missing so we can't do imputation 
+
+
+Now lets test for outliers using maharanis test
+
+```{r}
+mah<-mahalanobis(x = data[,-c(1,2,6)],
+                 center = colMeans(data[,-c(1,2,6)],na.rm = T),cov = cov(data[,-c(1,2,6)],use = "pairwise.complete.obs"))
+```
+
+determining the cutoff point through chi square distribution 
+
+```{r}
+cut<-qchisq(p = .99,df = 2)
+
+```
+
+summary of the outliers
+
+```{r}
+summary(mah<cut)
+```
+
+we have 9 outliers and we have to remove them 
+
+```{r}
+data<-data[which(mah<cut),]
+```
+
+Now lets move to the second phase :
+
+testing the normality - linearity - Homogeneity - Homoscdasticity
+
+```{r}
+par(mfrow=c(2,2))
+qqnorm(data$ESTEEM%>%jitter(factor = 5),main = "QQplot for self esteem")
+qqnorm(data$ATTROLE%>%jitter(factor = 5),main = "QQplot for Attitude to roles")
+qqnorm(data$NEUROTIC%>%jitter(factor = 5),main = "QQplot for neurotic")
+
+```
+
+Other way : making fake data for fake regression to test the assumption in multivariate way
+
+```{r}
+set.seed(345)
+rfake<-rchisq(n = nrow(data),7)
+```
+the df is arbitrary number 
+
+```{r}
+fakelm<-data%>%with(lm(rfake~ESTEEM+ATTROLE+NEUROTIC))
+```
+
+Now lets Extract the residual and fitted values 
+
+```{r}
+stdresid<-resid(fakelm)%>%scale()
+stdfit<-fitted(fakelm)%>%scale()
+```
+
+start with normality 
+we can check it using qqnorm plot
+
+```{r}
+qqPlot(stdresid)
+```
+
+fair enough !! got good data here 
+
+Now its time for homogeneity and homoscdasticity
+
+```{r}
+plot(stdfit,stdresid)
+abline(h = 0)
+abline(v = 0)
+```
+
+good , the data here is some king of homogeneity 
+
+ but we still need use test like levene to prove it 
+
+```{r}
+data%>%with(leveneTest(ESTEEM~FEM*MASC)) #testing for self Esteem
+data%>%with(leveneTest(ATTROLE~FEM*MASC)) #testing for Attitude toword female roles
+data%>%with(leveneTest(NEUROTIC~FEM*MASC)) # testing for neuroticism
+```
+
+the size of the sample Affect greatly on the significance level 
+so we will choose p.value =.001
+
+all Homogeneity tests is p>.001
+
+so we will assume the homogeneity here 
+
+now lets take more steps further toward manova analysis 
+
+```{r}
+DV = cbind(data$ESTEEM, data$ATTROLE, data$NEUROTIC)#combining the dependent variables together
+
+man<-data%>%with(lm(DV~FEM*MASC,data = data,
+                    contrasts = list(FEM=contr.sum,MASC=contr.sum)))
+
+manout<-Manova(mod = man,"III") #type three SS
+
+summary(manout,multivariate = T)
+```
+
+here we see the the significant main effect of the IVs 
+
+the effect size here = 1- wilk's lambda 
+
+```{r}
+1-0.917827 #effect size of FEM
+1-0.8237555 #effect size of MASC
+1-0.9933737 #effect size of interaction
+```
+
+
+here we will do post-hoc test --> single anova for each DV
+
+```{r,warning=F,message=F}
+#self esteem
+data%>%with(ezANOVA(data = data,dv = ESTEEM,
+                    wid = idx,between = c(FEM,MASC),type = 3))
+
+#Attitude
+data%>%with(ezANOVA(data = data,dv = ATTROLE,
+                    wid = idx,between = c(FEM,MASC),type = 3))
+
+#Neurotic
+
+data%>%with(ezANOVA(data = na.omit(data),dv = NEUROTIC,
+                    wid = idx,between = c(FEM,MASC),type = 3))
+```
+
+thankful the IVs is two level only and there is no interaction effect (except in self esteem)
+so the p-value in anova is enough and Explain only the mean 
+
+but we still need to calculate the effect size of each sig. different means using MOTE library or Cohen_d() function in psych package
+
+using Cohen.d()
+
+```{r}
+data[,-c(2,6)]%>%cohen.d(group = "FEM")
+
+data[,-c(1,6)]%>%cohen.d(group = "MASC")
+```
+
+using d.ind.t()
+
+```{r}
+data%>%group_by(FEM)%>%summarize(mean=mean(ATTROLE,na.rm = T),
+                                      sd=sd(ATTROLE,na.rm = T),num=n())
+
+d.ind.t(m1 = 36.0,m2 = 32.9,sd1 = 6.80,sd2 = 6.41,n1 = 202,n2 = 90)$d
+```
+
+we here see that the effect size using Cohen.d() is so close to d.ind.t() for attribute on each group of FEM
+but Cohen.d() here is more easier 
+
+
+HOPE TO FIND IT USEFULL 
+
+THANKS FOR BEING HERE
+
+REGARDS
+
+

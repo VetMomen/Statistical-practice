@@ -1,0 +1,582 @@
+#loading the libraries 
+
+
+```r
+library(knitr)
+library(tidyverse)
+```
+
+```
+## Warning: package 'tidyverse' was built under R version 3.5.3
+```
+
+```
+## -- Attaching packages -------------------------------------- tidyverse 1.2.1 --
+```
+
+```
+## v ggplot2 3.1.0     v purrr   0.2.5
+## v tibble  1.4.2     v dplyr   0.7.8
+## v tidyr   0.8.2     v stringr 1.3.1
+## v readr   1.2.1     v forcats 0.3.0
+```
+
+```
+## -- Conflicts ----------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+```
+
+```r
+library(car)
+```
+
+```
+## Warning: package 'car' was built under R version 3.5.2
+```
+
+```
+## Loading required package: carData
+```
+
+```
+## 
+## Attaching package: 'car'
+```
+
+```
+## The following object is masked from 'package:dplyr':
+## 
+##     recode
+```
+
+```
+## The following object is masked from 'package:purrr':
+## 
+##     some
+```
+
+```r
+library(effects)
+```
+
+```
+## Warning: package 'effects' was built under R version 3.5.3
+```
+
+```
+## lattice theme set by effectsTheme()
+## See ?effectsTheme for details.
+```
+
+```r
+library(multcomp)
+```
+
+```
+## Warning: package 'multcomp' was built under R version 3.5.3
+```
+
+```
+## Loading required package: mvtnorm
+```
+
+```
+## Warning: package 'mvtnorm' was built under R version 3.5.2
+```
+
+```
+## Loading required package: survival
+```
+
+```
+## Loading required package: TH.data
+```
+
+```
+## Loading required package: MASS
+```
+
+```
+## 
+## Attaching package: 'MASS'
+```
+
+```
+## The following object is masked from 'package:dplyr':
+## 
+##     select
+```
+
+```
+## 
+## Attaching package: 'TH.data'
+```
+
+```
+## The following object is masked from 'package:MASS':
+## 
+##     geyser
+```
+
+```r
+library(MOTE)
+```
+
+```
+## Warning: package 'MOTE' was built under R version 3.5.3
+```
+
+#loading the data 
+
+
+```r
+data<-read.csv("./data sets/bn ancova.csv")
+
+head(data)
+```
+
+```
+##   ï..subjno attdrug phyheal menheal psydrug    emplmnt      religion
+## 1         1       8       5       8       0 UNEMPLOYED    PROTESTANT
+## 2         2       7       4       6       0   EMPLOYED    PROTESTANT
+## 3         3       8       3       4       2   EMPLOYED      CATHOLIC
+## 4         4       9       2       2       3 UNEMPLOYED NONE OR OTHER
+## 5         5       7       3       6      15 UNEMPLOYED        JEWISH
+## 6         6       8       5       5       3   EMPLOYED      CATHOLIC
+```
+#selecting the variables 
+
+
+```r
+data<-data[,c("ï..subjno","attdrug","phyheal","emplmnt","religion")]
+
+head(data)
+```
+
+```
+##   ï..subjno attdrug phyheal    emplmnt      religion
+## 1         1       8       5 UNEMPLOYED    PROTESTANT
+## 2         2       7       4   EMPLOYED    PROTESTANT
+## 3         3       8       3   EMPLOYED      CATHOLIC
+## 4         4       9       2 UNEMPLOYED NONE OR OTHER
+## 5         5       7       3 UNEMPLOYED        JEWISH
+## 6         6       8       5   EMPLOYED      CATHOLIC
+```
+# the assumptions includes :
+##Accuracy
+##missing 
+##outliers
+##aditivity
+##Normality
+##Linearity
+##Homogeniety + homoscdasticity 
+
+#accuracy
+
+
+```r
+summary(data) #we have a problem in levels of religion
+```
+
+```
+##    ï..subjno        attdrug          phyheal             emplmnt   
+##  Min.   :  1.0   Min.   : 5.000   Min.   : 2.000   EMPLOYED  :246  
+##  1st Qu.:137.0   1st Qu.: 7.000   1st Qu.: 3.000   UNEMPLOYED:219  
+##  Median :314.0   Median : 8.000   Median : 5.000                   
+##  Mean   :317.4   Mean   : 7.686   Mean   : 4.972                   
+##  3rd Qu.:483.0   3rd Qu.: 9.000   3rd Qu.: 6.000                   
+##  Max.   :758.0   Max.   :10.000   Max.   :15.000                   
+##           religion  
+##               :  3  
+##  CATHOLIC     :119  
+##  JEWISH       : 92  
+##  NONE OR OTHER: 76  
+##  PROTESTANT   :175  
+## 
+```
+
+```r
+data<-data%>%mutate(religion=factor(religion,levels = c("CATHOLIC",
+                                                        "JEWISH",
+                                                        "NONE OR OTHER",
+                                                        "PROTESTANT"),labels = c("CATHOLIC",
+                                                                                 "JEWISH",
+                                                                                 "NONE",
+                                                                                 "PROTESTANT")))
+summary(data)
+```
+
+```
+##    ï..subjno        attdrug          phyheal             emplmnt   
+##  Min.   :  1.0   Min.   : 5.000   Min.   : 2.000   EMPLOYED  :246  
+##  1st Qu.:137.0   1st Qu.: 7.000   1st Qu.: 3.000   UNEMPLOYED:219  
+##  Median :314.0   Median : 8.000   Median : 5.000                   
+##  Mean   :317.4   Mean   : 7.686   Mean   : 4.972                   
+##  3rd Qu.:483.0   3rd Qu.: 9.000   3rd Qu.: 6.000                   
+##  Max.   :758.0   Max.   :10.000   Max.   :15.000                   
+##        religion  
+##  CATHOLIC  :119  
+##  JEWISH    : 92  
+##  NONE      : 76  
+##  PROTESTANT:175  
+##  NA's      :  3  
+## 
+```
+
+#missing --> we have only 3 cases in religion 
+
+#outliers -- > mahalanobis of CV and DV
+
+```r
+mah<-mahalanobis(x = data[,c("attdrug","phyheal")],center = colMeans(data[,c("attdrug","phyheal")]),cov = cov(data[,c("attdrug","phyheal")]))
+cut<-qchisq(p = .99,df = 2)
+
+data<-data[which(mah<cut),]
+```
+#sditivity
+
+
+```r
+(cor(data$attdrug,data$phyheal))
+```
+
+```
+## [1] 0.1494295
+```
+#normality
+
+```r
+chi<-rchisq(nrow(data),df = 7)
+
+fake<-lm(chi~data$attdrug+data$phyheal)
+
+stdresid<-rstudent(fake)
+stdfit<-scale(fitted(fake))
+
+plot(stdresid,stdfit)%>%abline(v = 0)%>%abline(h= 0)
+```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+#we might face a problem in homogeniety but the homoscdacity is great 
+
+
+```r
+qqPlot(fake) # the linearity is not so bad 
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+
+```
+## [1] 227 411
+```
+
+```r
+hist(stdresid)
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-2.png)
+#homogeneity
+
+
+```r
+leveneTest(data$attdrug~data$emplmnt*data$religion) # the homogeneity is good
+```
+
+```
+## Levene's Test for Homogeneity of Variance (center = median)
+##        Df F value Pr(>F)
+## group   7   1.152 0.3294
+##       446
+```
+#now lets start in ANCOVA
+
+
+```r
+anc<-data%>%with(lm(attdrug~emplmnt*religion+phyheal,data = data))
+
+summary.aov(anc)
+```
+
+```
+##                   Df Sum Sq Mean Sq F value  Pr(>F)   
+## emplmnt            1    2.3   2.307   1.813 0.17888   
+## religion           3    7.0   2.345   1.842 0.13872   
+## phyheal            1   13.9  13.943  10.954 0.00101 **
+## emplmnt:religion   3    9.5   3.155   2.478 0.06067 . 
+## Residuals        445  566.5   1.273                   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 3 observations deleted due to missingness
+```
+#here we see that the Covariance effect of physical health is significant 
+#and this is an indicator to the adjust effect of physical health on the attitude 
+#another thing is the significance effect of the interaction 
+#which mean that the significant effect of employment group is dependent
+#on the significance level of the religion group
+
+#main effect of every effect 
+
+#physical health 
+#SS Variable/(SS residual + SS Variable)
+
+```r
+SSR<-566.5
+13.9/(SSR+13.9)
+```
+
+```
+## [1] 0.023949
+```
+
+```r
+#Employment
+
+2.3/(SSR+2.3)
+```
+
+```
+## [1] 0.004043601
+```
+
+```r
+#religion
+7/(SSR+7)
+```
+
+```
+## [1] 0.01220575
+```
+
+```r
+#interaction
+9.5/(SSR+9.5)
+```
+
+```
+## [1] 0.01649306
+```
+#getting the adjusted mean using effects library
+
+
+
+```r
+effect("emplmnt",anc) #adjusted mean fot Employment 
+```
+
+```
+## NOTE: emplmnt is not a high-order term in the model
+```
+
+```
+## 
+##  emplmnt effect
+## emplmnt
+##   EMPLOYED UNEMPLOYED 
+##   7.629864   7.737740
+```
+
+```r
+effect("religion",anc)#adjusted mean fot religion
+```
+
+```
+## NOTE: religion is not a high-order term in the model
+```
+
+```
+## 
+##  religion effect
+## religion
+##   CATHOLIC     JEWISH       NONE PROTESTANT 
+##   7.857499   7.679772   7.406089   7.680639
+```
+
+```r
+effect("emplmnt*religion",anc)#adjusted mean fot interaction
+```
+
+```
+## 
+##  emplmnt*religion effect
+##             religion
+## emplmnt      CATHOLIC   JEWISH     NONE PROTESTANT
+##   EMPLOYED   7.706441 7.612309 7.657600   7.573605
+##   UNEMPLOYED 8.028414 7.756103 7.121515   7.801744
+```
+#now we will run post hoc test for interaction
+#and to do it you have  to take care of adjusted means 
+#so the pairwise  t test is not appropite
+#we will use tukyHSD using multcomp package 
+
+
+#then we have to separate the data sets of each condition and run
+#ancova for each part to do paireise comparison 
+
+```r
+set1<-data%>%filter(religion=="CATHOLIC")
+set2<-data%>%filter(religion=="JEWISH")
+set3<-data%>%filter(religion=="PROTESTANT")
+set4<-data%>%filter(religion=="NONE")
+
+fit1<-set1%>%with(lm(attdrug~phyheal+emplmnt))
+fit2<-set2%>%with(lm(attdrug~phyheal+emplmnt))
+fit3<-set3%>%with(lm(attdrug~phyheal+emplmnt))
+fit4<-set4%>%with(lm(attdrug~phyheal+emplmnt))
+```
+
+#Now lets use TukeyHSD for multiple 
+#comparison after adjusting for covariate 
+#using (general linear hypothesis testing package glht())
+
+```r
+glht(fit1,linfct=mcp(emplmnt="Tukey"))%>%summary
+```
+
+```
+## 
+## 	 Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = attdrug ~ phyheal + emplmnt)
+## 
+## Linear Hypotheses:
+##                            Estimate Std. Error t value Pr(>|t|)  
+## UNEMPLOYED - EMPLOYED == 0   0.3257     0.1918   1.698   0.0921 .
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## (Adjusted p values reported -- single-step method)
+```
+
+```r
+glht(fit2,linfct=mcp(emplmnt="Tukey"))%>%summary
+```
+
+```
+## 
+## 	 Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = attdrug ~ phyheal + emplmnt)
+## 
+## Linear Hypotheses:
+##                            Estimate Std. Error t value Pr(>|t|)
+## UNEMPLOYED - EMPLOYED == 0   0.1428     0.2452   0.582    0.562
+## (Adjusted p values reported -- single-step method)
+```
+
+```r
+glht(fit3,linfct=mcp(emplmnt="Tukey"))%>%summary
+```
+
+```
+## 
+## 	 Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = attdrug ~ phyheal + emplmnt)
+## 
+## Linear Hypotheses:
+##                            Estimate Std. Error t value Pr(>|t|)
+## UNEMPLOYED - EMPLOYED == 0   0.2243     0.1702   1.318    0.189
+## (Adjusted p values reported -- single-step method)
+```
+
+```r
+glht(fit4,linfct=mcp(emplmnt="Tukey"))%>%summary
+```
+
+```
+## 
+## 	 Simultaneous Tests for General Linear Hypotheses
+## 
+## Multiple Comparisons of Means: Tukey Contrasts
+## 
+## 
+## Fit: lm(formula = attdrug ~ phyheal + emplmnt)
+## 
+## Linear Hypotheses:
+##                            Estimate Std. Error t value Pr(>|t|)  
+## UNEMPLOYED - EMPLOYED == 0  -0.5513     0.3065  -1.799   0.0762 .
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## (Adjusted p values reported -- single-step method)
+```
+#Now lets look at the effect size of multiple comparisons 
+#of the interaction using MOTE package 
+
+
+```r
+data%>%group_by(emplmnt,religion)%>%summarize(sd=sd(attdrug),
+                                              Num=n())
+```
+
+```
+## # A tibble: 10 x 4
+## # Groups:   emplmnt [?]
+##    emplmnt    religion        sd   Num
+##    <fct>      <fct>        <dbl> <int>
+##  1 EMPLOYED   CATHOLIC     0.988    62
+##  2 EMPLOYED   JEWISH       1.11     44
+##  3 EMPLOYED   NONE         1.35     46
+##  4 EMPLOYED   PROTESTANT   1.04     89
+##  5 EMPLOYED   <NA>       NaN         1
+##  6 UNEMPLOYED CATHOLIC     1.09     56
+##  7 UNEMPLOYED JEWISH       1.21     46
+##  8 UNEMPLOYED NONE         1.18     30
+##  9 UNEMPLOYED PROTESTANT   1.20     81
+## 10 UNEMPLOYED <NA>         0.707     2
+```
+#we will depend on the mean estimated from 
+#effect package wich adjusted for Covariance
+
+
+```r
+d.ind.t(m1 = 8.04, sd1 = 1.09, n1 = 56,
+        m2 = 7.71, sd2 =  .99, n2 = 62,
+        a = .05)$d #catholic Employed Vs Catholic unemployed
+```
+
+```
+## [1] 0.3177309
+```
+
+```r
+d.ind.t(m1 = 7.78, sd1 = 1.21, n1 = 47,
+        m2 = 7.61, sd2 = 1.11, n2 = 44,
+        a = .05)$d #jwish Employed Vs jwish unemployed
+```
+
+```
+## [1] 0.1462039
+```
+
+```r
+d.ind.t(m1 = 7.82, sd1 = 1.19, n1 = 83,
+        m2 = 7.50, sd2 =  1.08, n2 = 92,
+        a = .05)$d #protestant Employed Vs protestant unemployed
+```
+
+```
+## [1] 0.2823188
+```
+
+```r
+d.ind.t(m1 = 7.12, sd1 = 1.18, n1 = 30,
+        m2 = 7.67, sd2 =  1.35, n2 = 46,
+        a = .05)$d #none Employed Vs none unemployed
+```
+
+```
+## [1] -0.4276632
+```
+
+
+
+

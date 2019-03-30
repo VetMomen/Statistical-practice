@@ -1,0 +1,126 @@
+---
+title: "Anova project--"
+author: "Mo'men Mohamed"
+date: "March 31, 2019"
+output: html_document
+---
+
+
+
+#This Mark down for anova 
+### ---> for all types of anova 
+
+loading the libraries 
+
+```{r lib,message=F,warning=FALSE}
+library(tidyverse)
+library(knitr)
+library(pwr)
+library(car)
+library(sjstats)
+library(psych)
+library(ggplot2)
+```
+
+loading the data sets --> All data sets 
+
+```{r data}
+bs<-read.csv("./data sets/bn 1 anova.csv")
+
+names(bs)<-c("group","obs")
+
+head(bs)%>%kable("markdown") # it is a longtudinal data set 
+
+
+```
+
+First of all lets see the desired sample size 
+
+```{r sample size}
+
+#intial anova with our sample 
+
+aov(formula = obs~group,data = bs)%>%summary
+betvar<-25.24/2 #mean sq
+withvar<-19.67/8 #mean sq
+pwr.anova.test(k = 3,f = .25,sig.level = .05,power = .8)
+
+#here we see that we need arround 53 person in each group to acheive the power of .8
+
+#but we pretend that we have this size !!
+
+```
+
+
+Now lets look at the acurracy , missing and outlier 
+
+```{r screen}
+summary(bs)
+
+#no missing 
+
+#see if there are any outlier 
+
+max<-qnorm(p = c(.99),mean = mean(bs$obs),sd = sd(bs$obs))
+min<-qnorm(p = c(.01),mean = mean(bs$obs),sd = sd(bs$obs))
+
+bs[which(bs$obs>max|bs$obs<min),]
+
+# there is no outliers !!
+
+```
+
+
+assumption of normality 
+
+
+```{r norm}
+#running fake regression 
+rdata<-rnorm(n = nrow(bs))
+fake<-lm(rdata~bs$obs)
+plot(fake)
+
+qqPlot(fake)
+```
+
+the data is linear and normal but it is not enough to judge on homoscdatisity and homogeniety 
+
+```{r homogeniety}
+leveneTest(bs$obs~bs$group)
+
+```
+
+great ,, the data is homogeneic
+
+Now lets run anova 
+
+
+```{r anova}
+mod<-bs%>%with(aov(obs~group))
+
+eta_sq(mod) # we have eta square = 0.56
+
+
+```
+
+as the f statistic is significant , then we have to do post hoc test to know where is exactly the difference , and this pair wise is corrected using be
+
+```{r post}
+t<-bs%>%with(
+        pairwise.t.test(x = obs,group,p.adjust.method = "bonferroni",paired = F)
+)
+t
+
+
+bs%>%group_by(group)%>%summarize(mean=mean(obs))%>%kable("markdown")
+```
+
+lets graphing it
+
+```{r graph}
+
+errordata<-bs%>%group_by(group)%>%summarize(mean=mean(obs),max=qnorm(.95,mean = mean(obs),sd=sd(obs)),min=qnorm(.05,mean = mean(obs),sd=sd(obs)))
+
+errordata%>%ggplot(aes(ymin=min,ymax=max,x=group))+geom_pointrange(aes(x = group,y = mean,color=group))+geom_errorbar()
+        
+```
