@@ -1,0 +1,417 @@
+---
+title: "Predicting houses prices"
+author: "Mo'men Mohamed"
+date: "April 19, 2019"
+output: html_document
+---
+
+the aim of this analysis to use weighted regression to predict the houses prices
+
+plz feel free to contact me for any advice or recommendations: vet.m.mohamed@gmail.com 
+
+find the data [here](https://www.kaggle.com/harlfoxem/housesalesprediction)
+
+firstly lets load the libraries we are going to use 
+
+
+```{r,warning=F,message=F}
+library(tidyverse)
+library(caret)
+library(mice)
+library(car)
+library(lm.beta)
+library(knitr)
+```
+
+Next lets import the data 
+
+```{r,warning=F}
+houses<-read_csv(file = "./data sets/kc_house_data.csv",col_types = "cTninnnifffinnddf??nn")
+
+head(houses)%>%kable("markdown")
+```
+
+checking the structure of the data 
+
+```{r}
+str(houses)
+```
+
+removing id lat long date
+
+```{r}
+houses<-houses%>%select(-c(id,date,lat,long))
+```
+
+need to check the condition if it need to be ordered 
+
+```{r}
+unique(houses$condition)
+```
+
+i think that is preferable if it is ordered
+
+```{r}
+houses<-houses%>%mutate(condition=factor(condition,levels = c("1","2","3","4","5"),labels = c("1","2","3","4","5"),ordered = T))
+```
+
+
+checking the structure again 
+
+```{r}
+str(houses)
+```
+
+now we want to test some assumption starting with is the missing values , what about it ?
+
+```{r}
+summary(houses)
+```
+
+we have a problem only with floor
+
+lets check the percent of missing 
+
+```{r}
+(sum(is.na(houses$floors))/nrow(houses)
+)*100
+```
+
+only 10% of missing values , so i will impute it using multiple imputation method 
+
+first i want to extract the numeric variables 
+
+```{r,cache=T}
+num<-houses%>%select(price,bedrooms,bathrooms,sqft_living,sqft_lot,floors,sqft_above,sqft_living15,sqft_lot15)%>%data.frame()
+
+set.seed(3215)
+
+imp<-mice(data = num)
+
+impnum<-complete(imp)%>%data.frame()
+
+houses<-houses%>%mutate(floors=impnum$floors,
+                        floors=as.integer(floors))
+```
+
+check again for missing 
+
+```{r}
+(sum(is.na(houses$floors))/nrow(houses)
+)*100
+```
+
+great
+
+now lets run regular regression to test the assumption
+
+```{r}
+fit<-houses%>%with(lm(price~.,data=houses))
+summary(fit)
+```
+
+
+here from round 1 we can see that most of predictors are significant 
+
+also we see that the ares of basement has nothing to do for prediction , so i will remove it and run the analysis again
+
+```{r}
+houses<-houses%>%select(-sqft_basement)
+
+fit<-houses%>%with(lm(price~.,data=houses))
+summary(fit)
+```
+
+another thing to take care with is that zibcode has a lot of levels and we need to round it 
+
+according to residual i will try to round it to small numbers of areas using residuals 
+
+```{r,message=F}
+grouping<-houses%>%mutate(resid=resid(fit))%>%
+        group_by(zipcode)%>%summarize(medresid=median(resid),
+                                      cnt=n())%>%arrange(medresid)%>%
+        mutate(cumcnt=cumsum(cnt),
+               group=ntile(cumcnt,5))
+
+houses<-houses%>%left_join(grouping[,c("zipcode","group")])%>%mutate(group=factor(group))
+```
+
+now remove the zip from the data and run fit again 
+
+```{r}
+houses<-houses%>%select(-zipcode)
+
+fit<-houses%>%with(lm(price~.,data=houses))
+summary(fit)
+```
+
+most coefficients here are beautiful
+
+now what about outlier!!
+
+```{r}
+
+#using mahalanobis distance for multivariate outliers 
+
+num2<-houses%>%select(price,bedrooms,bathrooms,sqft_living,sqft_lot,floors,sqft_above,sqft_living15,sqft_lot15)
+
+mah<-mahalanobis(x = num2,center = colMeans(num2),cov = cov(num2))
+
+cutmahup<-qchisq(.99,ncol(num2))
+cutmahdown<-qchisq(.01,ncol(num2))
+
+outidxup<-mah>cutmahup%>%as.numeric()
+outidxdown<-mah<cutmahdown%>%as.numeric()
+
+table(outidxup)
+table(outidxdown)
+
+```
+
+next testing for influential points 
+
+```{r}
+inf<-hatvalues(fit)
+cutinf<-(2*(ncol(houses)-1)+1)/nrow(houses)
+
+table(inf>cutinf)
+
+```
+
+horrible !!
+
+
+```{r}
+infidx<-inf>cutinf%>%as.numeric()
+```
+
+testing cooks distance 
+
+```{r}
+cook<-cooks.distance(fit)
+
+cutcook<-4/(nrow(houses)-(ncol(houses)-1)-1)
+
+table(cook>cutcook)
+
+cookidx<-cook>cutcook%>%as.numeric()
+
+```
+
+testing for variance inflation 
+```{r}
+vif<-vif(fit)
+vif
+```
+
+good news , we don't have here any vif value over 10 and this indicate absence of multicolinearity 
+
+testing auto correlation 
+
+```{r,cache=T}
+auto<-durbinWatsonTest(fit,simulate = T,reps = 1000,method = "resample")
+auto
+```
+
+great , p value>.01 indicate that there is no auto correlation 
+
+Now lets see the most bad records in our data 
+
+```{r}
+allbad<-outidxup+outidxdown+infidx+cookidx
+
+table(allbad)
+```
+
+i will delete all records which break 2 rules 
+
+```{r,message=F}
+bad<-allbad>=2
+
+table(bad)
+
+houses<-houses%>%anti_join(houses[bad,])
+```
+
+running the fit again 
+
+```{r}
+fit<-houses%>%with(lm(price~.,data=houses))
+summary(fit)
+
+plot(fit,3)
+
+```
+
+we see here that we have some degree of heteroscedasticity 
+
+checking the normality 
+
+```{r,cache=TRUE}
+qqPlot(fit)
+```
+
+OK , the qqplot shows that the data has a degree of skewness 
+
+and to prove it lets see histogram
+
+```{r}
+hist(rstudent(fit))
+```
+
+some right skew but the data still good 
+
+the only issue we have to handle is heteroscedasticity 
+
+now i will check partial residual to know the problematic variable
+
+```{r,cache=T}
+resid<-resid(fit)
+term<-predict(fit,houses,type = "terms")%>%data.frame()
+
+partial.resid<-resid+term
+houses.org<-houses
+names(houses.org)<-paste("org",names(houses),sep = ".")
+names(partial.resid)<-paste("part",names(partial.resid),sep = ".")
+names(term)<-paste("term",names(term),sep = ".")
+allpartial<-cbind(houses.org[,-1],partial.resid,term)
+
+
+allpartial%>%ggplot(aes(org.sqft_living,part.sqft_living))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.sqft_living,y=term.sqft_living),color="red",lwd=1)
+
+allpartial%>%ggplot(aes(org.sqft_lot,part.sqft_lot))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.sqft_lot,y=term.sqft_lot),color="red",lwd=1)
+
+
+allpartial%>%ggplot(aes(org.sqft_above,part.sqft_above))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.sqft_above,y=term.sqft_above),color="red",lwd=1)
+
+allpartial%>%ggplot(aes(org.sqft_living15,part.sqft_living15))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.sqft_living15,y=term.sqft_living15),color="red",lwd=1)
+
+allpartial%>%ggplot(aes(org.sqft_lot15,part.sqft_lot15))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.sqft_lot15,y=term.sqft_lot15),color="red",lwd=1)
+
+allpartial%>%ggplot(aes(org.yr_built,part.yr_built))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.yr_built,y=term.yr_built),color="red",lwd=1)
+
+
+allpartial%>%ggplot(aes(org.yr_renovated,part.yr_renovated))+
+        geom_point()+
+        geom_smooth()+
+        geom_line(aes(x = org.yr_renovated,y=term.yr_renovated),color="red",lwd=1)
+
+```
+
+here we can find that the most problems associated with square foot of lot and the same variable in 2015 and the year of reonivation 
+
+i will categorize the renovation years variable into 4 categories according to residuals 
+
+```{r}
+houses$yr_renovated%>%table()%>%kable("html")
+
+
+stdresid<-rstudent(fit)
+
+catigor<-houses%>%mutate(stdresid)%>%
+        group_by(yr_renovated)%>%
+        summarize(medstd=median(stdresid),cnt=n())%>%
+        arrange(medstd)%>%
+        mutate(cumcnt=cumsum(cnt),renovC=ntile(cumcnt,4))
+
+catigor%>%kable("markdown")
+
+catigor<-catigor%>%select(yr_renovated,renovC)
+
+
+houses<-(houses)%>%left_join(catigor)%>%mutate(renovC=factor(renovC))
+
+houses<-houses%>%select(-yr_renovated)
+
+houses%>%head%>%kable("markdown")
+
+table(houses$renovC)
+
+```
+
+recalculating the fit
+
+```{r}
+fit<-houses%>%with(lm(price~.,data=houses))
+summary(fit)
+```
+
+Good , all categories are significant  
+
+now lets try the weighted regression and start with calculating the weights
+
+```{r,cache=T}
+residl<-resid(fit)%>%abs()
+fited<-fitted(fit)
+residfit<-lm(residl~fited)
+fittresid<-fitted(residfit)
+wts<-1/fittresid^2
+
+wtsfit<-houses%>%with(lm(price~.,data=houses,weights = wts))
+summary(wtsfit)
+
+
+plot(wtsfit,3,main = "weighted regression")
+plot(fit,3,main = "Ordinary regression")
+```
+
+we see here an improve in the linearity and heteroscedasticity
+
+comparing the standardized coefficients of OLS model and weighted model
+
+```{r}
+data.frame(cbind(lm.beta(fit)$standardized.coefficients,lm.beta(wtsfit)$standardized.coefficients))%>%kable(format = "markdown",digits = 3,col.names = c("Ordinary","Weighted"))
+
+```
+
+The Coefficients are so close to each other 
+
+Now lets see the ability of our model to predict out sample data 
+
+```{r}
+houses<-cbind(houses,wts)
+
+set.seed(4785)
+
+trainidx<-createDataPartition(y = houses$price,p = .75,list = F)
+traindata<-houses[trainidx,]
+testdata<-houses[-trainidx,]
+
+```
+
+running the model
+
+```{r,cache=T}
+
+set.seed(3454)
+trainfit<-traindata%>%with(lm(price~.,data = traindata[,-length(names(traindata))],weights = traindata$wts))
+summary(trainfit)
+
+predicted<-predict(trainfit,testdata)
+
+cbind(RMSE=RMSE(pred = predicted,obs = testdata$price),R2=R2(pred = predicted,obs = testdata$price))%>%kable("markdown")
+```
+
+
+
+
+##REGARDS
+
