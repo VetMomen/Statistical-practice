@@ -1,0 +1,4 @@
+"","Test","Statistic","p value","Result"
+"1","Mardia Skewness","166.011754198487","7.50438800965671e-35","NO"
+"2","Mardia Kurtosis","4.13359514643302","3.57132348343114e-05","NO"
+"3","MVN",NA,NA,"NO"
