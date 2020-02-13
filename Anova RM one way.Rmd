@@ -7,7 +7,6 @@ output: html_document
 
 ```{r lib}
 library(psych)
-library(tidyverse)
 library(car)
 library(ggplot2)
 library(pwr)

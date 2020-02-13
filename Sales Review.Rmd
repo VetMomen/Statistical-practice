@@ -1,0 +1,106 @@
+---
+title: "Sales Review"
+author: "Mo'men Mohamed"
+date: "12/31/2019"
+output: powerpoint_presentation
+---
+# Sales Review For 2018-2019 
+## including Compariaons between the Potential Accounts 
+
+```{r lib,echo=FALSE,include=FALSE,cache=T}
+library(knitr)
+library(magrittr)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+```{r prep_data,echo=FALSE,include=F,cache=T}
+sales<-read.csv(file = "/media/salsa/8F9E-E2B8/Sync/UBM/SALES ANALYSIS 018-019.csv")
+
+head(sales)%>%kable()
+
+for (i in 1:ncol(sales)) {
+  class(sales[,i])%>%print()
+}
+#changing the classes
+sales$Date<-as.Date(sales$Date)
+sales$Qty<-as.numeric(sales$Qty)
+sales$Unit.Price<-as.numeric(sales$Unit.Price)
+sales$Net.Sales<-as.numeric(sales$Net.Sales)
+sales$year<-as.factor(sales$year)
+for (i in 1:ncol(sales)) {
+  class(sales[,i])%>%print()
+}
+```
+
+
+
+The First thing to pay attention to is to compare between the two years in **Total sales Value** as following:
+
+
+```{r total,echo=F,cache=T}
+sales%>%group_by(year)%>%summarize(Total_sales=sum(Net.Sales,na.rm = T))%>%ggplot(aes(x=year,y=Total_sales))+
+  geom_col()+
+  geom_label(aes(label=Total_sales))
+
+```
+
+
+
+As we See there are like *1 million and 800 thousands* difference between two years , so we need to break the sales down do analyse the gap and know where is the problem!
+
+So, lets see each sector in the two years :
+
+
+```{r prod,out.width='90%',echo=F,cache=T}
+sales%>%group_by(year,Product.Type)%>%summarize(Total_sales=sum(Net.Sales,na.rm = T))%>%ggplot(aes(x=year,y=Total_sales,fill=Product.Type))+geom_col()+geom_text(aes(label=Total_sales,angle=45),check_overlap = T)+facet_grid(.~Product.Type)+
+        theme(legend.position = "none")
+
+```
+
+As we see in the previous chart , the gap shrinked from 1800000 EGP to **900000 EGP**.
+
+we need to know the the precise factor which dropped the sales like that , and also know the area of growth if it exists!
+
+To know that lets First see the Accounts arranged in term of Total sales and see the relative importance of every one  in *2019* !
+
+```{r,echo=F,cache=T}
+sales%>%filter(year==2019)%>%group_by(Customer)%>%summarize(Sales=sum(Net.Sales,na.rm = T))%>%arrange(desc(Sales))%>%kable(format = "markdown")
+
+```
+
+**NOW** im going to throw the spot light on each singl Account of the most Potential one.
+
+The aim is :
+
+- To see the *drop* in sales **Product by Account**
+- To see the *growth* also **Product by Account**
+
+```{r prod cust,out.width="90%",echo=F,cache=T}
+
+#Dina
+sales%>%filter(Product.Type=="Add"&Customer=="Dina")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Dina :0")
+
+#Copenhagen
+
+sales%>%filter(Product.Type=="Add"&Customer=="Copenhagen")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Copenhagen")
+
+#Delta Misr
+sales%>%filter(Product.Type=="Add"&Customer=="Delta Misr")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Delta Misr")
+
+#Enma’a
+sales%>%filter(Product.Type=="Add"&Customer=="Enma'a")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm=T)*25)/1000)%>%ggplot(aes(x=year,y=Total))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Enma’a")
+
+#Reta Keriasy
+
+sales%>%filter(Product.Type=="Add"&Customer=="Reta Keriasy")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Reta Keriasy")
+
+#Al Safa ( Al Maikana )
+
+sales%>%filter(Product.Type=="Add"&Customer=="Al Safa ( Al Maikana )")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Al Safa ( Al Maikana )")
+
+#Al- Pramos	
+
+sales%>%filter(Product.Type=="Add"&Customer=="Al- Pramos")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Al- Pramos")
+```

@@ -1,0 +1,156 @@
+---
+title: "Sales Analysis"
+author: "Mo'men Mohamed"
+date: "12/31/2019"
+output:
+  html_document: default
+---
+# Sales Review For 2018-2019 
+## including Compariaons between the Potential Accounts 
+
+```{r lib,echo=FALSE,include=FALSE}
+library(knitr)
+library(kableExtra)
+library(grDevices)
+library(tidyverse)
+```
+
+```{r prep_data,echo=FALSE,include=F,cache=T}
+sales<-read.csv(file = "/media/salsa/8F9E-E2B8/Sync/UBM/SALES ANALYSIS 018-019.csv")
+
+head(sales)%>%kable()
+
+for (i in 1:ncol(sales)) {
+  class(sales[,i])%>%print()
+}
+#changing the classes
+sales$Date<-as.Date(sales$Date)
+sales$Qty<-as.numeric(sales$Qty)
+sales$Unit.Price<-as.numeric(sales$Unit.Price)
+sales$Net.Sales<-as.numeric(sales$Net.Sales)
+sales$year<-as.factor(sales$year)
+for (i in 1:ncol(sales)) {
+  class(sales[,i])%>%print()
+}
+```
+
+
+
+ - The First thing to pay attention to is to compare between the two years in **Total sales Value** as following:
+
+
+```{r total,echo=F,cache=T}
+sales%>%group_by(year)%>%summarize(Total_sales=sum(Net.Sales,na.rm = T))%>%ggplot(aes(x=year,y=Total_sales))+
+  geom_col(width = .3,fill="darkgreen",col="brown")+
+  geom_label(aes(label=Total_sales))+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+```
+
+ As we See there are like __*1 million and 100 thousands*__ difference between two years , so we need to break the sales down do analyse the gap and know where is the problem!
+
+ So, lets see each sector in the two years :
+
+
+```{r prod,out.width='90%',echo=F,cache=T}
+sales%>%group_by(year,Product.Type)%>%summarize(Total_sales=sum(Net.Sales,na.rm = T))%>%ggplot(aes(x=year,y=Total_sales,fill=Product.Type))+geom_col()+geom_text(aes(label=Total_sales,angle=45),check_overlap = T)+facet_grid(.~Product.Type)+
+        theme(legend.position = "none")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+```
+
+ As we see in the previous chart , the gap shrinked from **1100000 EGP** to ***900000 EGP***.
+
+ we need to know the the precise factor which dropped the sales like that , and also know the area of growth if it exists!
+
+ To know that lets First see the Accounts arranged in term of Total sales and see the relative importance of every one  in *2019* !
+
+```{r,echo=F,cache=T}
+sales%>%filter(year==2019)%>%group_by(Customer)%>%summarize(Sales=sum(Net.Sales,na.rm = T))%>%arrange(desc(Sales))%>%kable(format = "html")%>%kable_styling(c("striped","bordered","condensed","hover","responsive"),full_width = F,fixed_thead = T)%>%column_spec(column = 1,bold = T,color = "brown",background = "white")%>%column_spec(column = 2,italic = T,bold = T)
+
+```
+
+ **NOW** im going to throw the spot light on each singl Account of the most Potential one.
+
+ The aim is :
+
+ - To see the *drop* in sales **Product by Account**
+ - To see the *growth* also **Product by Account**
+
+```{r prod cust,out.width="90%",echo=F,cache=T}
+
+#Dina
+sales%>%filter(Product.Type=="Add"&Customer=="Dina")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Dina :0")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+#Copenhagen
+
+sales%>%filter(Product.Type=="Add"&Customer=="Copenhagen")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Copenhagen")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+#Delta Misr
+sales%>%filter(Product.Type=="Add"&Customer=="Delta Misr")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Delta Misr")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+#Enma’a
+sales%>%filter(Product.Type=="Add"&Customer=="Enma'a")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm=T)*25)/1000)%>%ggplot(aes(x=year,y=Total))+geom_col(width = .3,fill="purple")+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Enma’a")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+#Reta Keriasy
+
+sales%>%filter(Product.Type=="Add"&Customer=="Reta Keriasy")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Reta Keriasy")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+#Al Safa ( Al Maikana )
+
+sales%>%filter(Product.Type=="Add"&Customer=="Al Safa ( Al Maikana )")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Al Safa ( Al Maikana )")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+
+#Al- Pramos	
+
+sales%>%filter(Product.Type=="Add"&Customer=="Al- Pramos")%>%group_by(year,Products)%>%summarize(Total=(sum(Qty,na.rm = T)*25)/1000)%>%ggplot(aes(x=year,y=Total,fill=Products))+geom_col()+geom_label(aes(label=Total))+facet_grid(.~Products)+ggtitle(label = "Al- Pramos")+
+  theme_classic()+
+  scale_y_continuous(labels = scales::comma)
+```
+
+ Great, we saw the dropped areas and growth ones in the most potential Farms But To be Honest , There are **other** accounts which holds a great potentiality in the market But we still lack the ability to penetrate it .
+
+ in the next table I present all the Farms in the area with the following informations :
+
+ - **Account Name**
+ - **Products In use**
+ - **Opportunities**
+ - **Consultant** 
+
+
+```{r,cache=T,echo=F,cache=T}
+tab<-read.csv("/media/salsa/8F9E-E2B8/Sync/UBM/Farms/Arranged Data.csv")
+
+tab%>%mutate(POTENIALITY=cell_spec(x = POTENIALITY,format = "html",background = ifelse(POTENIALITY=="*****","darkolivegreen",
+                                                                                       ifelse(POTENIALITY=="****","darkred",
+                                                                                              ifelse(POTENIALITY=="***","darkorange",
+                                                                                                     ifelse(POTENIALITY=="**","gray","white")))),color = "white"),
+             CONSULT=cell_spec(x = CONSULT,format = "html",underline=ifelse(CONSULT=="Hegazy"|CONSULT=="Hazem",T,F),bold = ifelse(CONSULT=="Hegazy",T,F)),
+             Smartamine=cell_spec(x=Smartamine,background = ifelse(Smartamine=="#","brown",ifelse(Smartamine=="%","gray","white")),color = "white"),
+             Lysigem=cell_spec(x=Lysigem,background = ifelse(Lysigem=="#","brown",ifelse(Lysigem=="%","gray","white")),color = "white"),
+             Cholipearl=cell_spec(x=Cholipearl,background = ifelse(Cholipearl=="#","brown",ifelse(Cholipearl=="%","gray","white")),color = "white"),
+             Fixfin.Dry=cell_spec(x=Fixfin.Dry,background = ifelse(Fixfin.Dry=="#","brown",ifelse(Fixfin.Dry=="%","gray","white")),color = "white"),
+             Nutri.CAB=cell_spec(x=Nutri.CAB,background = ifelse(Nutri.CAB=="#","brown",ifelse(Nutri.CAB=="%","gray","white")),color = "white"),
+             Calfostonic.25Kg=cell_spec(x=Calfostonic.25Kg,background = ifelse(Calfostonic.25Kg=="#","brown",ifelse(Calfostonic.25Kg=="%","gray","white")),color = "white"),
+             Axcellera.C=cell_spec(x=Axcellera.C,background = ifelse(Axcellera.C=="#","brown",ifelse(Axcellera.C=="%","gray","white")),color = "white"),
+             PSE=cell_spec(x=PSE,background = ifelse(PSE=="#","brown",ifelse(PSE=="%","gray","white")),color = "white"),
+             Cr=cell_spec(x=Cr,background = ifelse(Cr=="#","brown",ifelse(Cr=="%","gray","white")),color = "white"),
+             Mia.Bond=cell_spec(x=Mia.Bond,background = ifelse(Mia.Bond=="#","brown",ifelse(Mia.Bond=="%","gray","white")),color = "white"),
+             Mia.Bond.360	=cell_spec(x=Mia.Bond.360	,background = ifelse(Mia.Bond.360=="#","brown",ifelse(Mia.Bond.360=="%","gray","white")),color = "white"),
+             Prot.N	=cell_spec(x=Prot.N	,background = ifelse(Prot.N=="#","brown",ifelse(Prot.N=="%","gray","white")),color = "white")
+)%>%
+  kable(escape = F)%>%kable_styling(full_width = F,bootstrap_options = c("straped","responsive"))%>%kable_styling(bootstrap_options = c("striped","hover"),full_width = F,fixed_thead = T)
+```

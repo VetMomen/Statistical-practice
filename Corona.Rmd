@@ -1,0 +1,80 @@
+---
+title: "Corona Virus outbreak analysis"
+author: "Mo'men Mohamed"
+date: "2/13/2020"
+output: html_document
+---
+
+#This is an analysis to understand the spread of corona virus and exploring its pattern 
+
+Loading libraries
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+```
+
+then importing the data 
+
+```{r,warning=F,message=F}
+corona<-read_csv(file = "/home/salsa/Downloads/2019_nCoV_data.csv")
+
+head(corona)%>%kable(format = "markdown")
+```
+
+lets see the class of each variable and what we need to do for each one 
+
+```{r}
+sapply(X = corona,FUN = function(x){
+        class(x)
+})
+
+```
+we have an issue in *Date* and *Last Update*
+need to convert it into date 
+
+```{r}
+
+#Converting Date into Date 
+
+corona<-corona%>%mutate(Date=mdy_hms(Date))
+class(corona$Date)
+
+#But we Don't need the part of time 
+
+corona<-corona%>%mutate(Date=str_extract(string = Date,pattern = "(\\d{2})([:punct:])(\\d{2})([:punct:])(\\d{2,})"))%>%mutate(Date=as_date(Date))
+
+#Doing the same thing for Lastupdate 
+
+corona<-corona%>%mutate(`Last Update`=str_extract(string = `Last Update`,pattern = "(\\d{2})([:punct:])(\\d{2})([:punct:])(\\d{2,})"))
+
+#Correcting each format alone 
+
+dist_idx<-na.omit(str_detect(corona$`Last Update`,pattern = "\\-"))
+
+corona<-corona%>%mutate(`Last Update`=str_replace_all(string = `Last Update`,pattern = "\\/",replacement = "\\-"))
+
+cor1<-corona[dist_idx,]%>%mutate(`Last Update`=ydm(`Last Update`))%>%mutate(lyear=year(`Last Update`),lmonth=month(`Last Update`),lday=day(`Last Update`))
+
+for(i in 1:nrow(cor1)){
+        if(is.na(cor1$lmonth[i])){NA}
+        else if(cor1$lmonth[i]>02){
+                d=cor1$lmonth[i]
+                cor1$lday[i]<-d
+                cor1$lmonth[i]<-02
+        }
+        else{"pass"}
+}
+        
+cor1<-cor1%>%mutate(Last_update=str_c(lmonth,lday,lyear,sep = "-"),
+                    `Last Update`=mdy(Last_update))
+
+cor1<-cor1[,-c(9,10,11,12)]
+
+cor2<-corona[!dist_idx,]%>%mutate(`Last Update`=mdy(`Last Update`))
+
+corona<-bind_rows(cor1,cor2)
+
+```

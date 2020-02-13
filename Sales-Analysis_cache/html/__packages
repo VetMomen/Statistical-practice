@@ -1,0 +1,13 @@
+base
+knitr
+magrittr
+ggplot2
+tidyr
+dplyr
+kableExtra
+tidyverse
+tibble
+readr
+purrr
+stringr
+forcats
