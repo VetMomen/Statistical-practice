@@ -28,7 +28,7 @@ attrib<-function(x,attr){
 
 
 
-rs<-rsDriver(port = 3087L,browser = "firefox")
+rs<-rsDriver(port = 3077L,browser = "firefox")
 rmdr<-rs$client
 
 rmdr$navigate("https://www.upwork.com/")
@@ -263,8 +263,8 @@ data<-data%>%mutate(jobtitle=as.character(jobtitle),
                     score=as.numeric(score),
                     Nfeedback=as.numeric(Nfeedback))
 
-write.csv(data,file = paste0("./data sets/upwork","/",Sys.Date(),"-",18,".csv"))
-saveRDS(object = data,file =paste0("./data sets/upwork","/",Sys.Date(),"-",18,".rds"))
+write.csv(data,file = paste0("./data sets/upwork","/",Sys.Date(),"-",19,".csv"))
+saveRDS(object = data,file =paste0("./data sets/upwork","/",Sys.Date(),"-",19,".rds"))
 
 #########################################################
 

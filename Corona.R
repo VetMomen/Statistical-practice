@@ -1,9 +1,16 @@
 library(tidyverse)
 library(lubridate)
+library(leaflet)
 
 #importing the data of corona virus
 
-corona<-read_csv(file = "/home/salsa/Downloads/2019_nCoV_data.csv",col_types = c('c?cc?nnn'))
+#choosing the directory
+
+dirr=choose.dir()
+
+print(dirr)
+
+corona<-read_csv(file = paste(dirr,"2019_nCoV_data.csv",sep = "/"),col_types = c('c?cc?nnn'))
 
 for(i in 1:ncol(corona)){
         col<-unlist(c(corona[,i]))
@@ -37,3 +44,63 @@ unique(nd_d$`Last Update`)
 
 coronaC<-bind_rows(st_d,nd_d)
 year(coronaC$`Last Update`)
+
+#removing sno variable 
+
+coronaC<-coronaC[,-1]
+
+#importing the rest of info 
+
+#making directory 
+
+dirr2<-choose.dir()
+
+corona2<-read.csv(paste(dirr2,"COVID19_line_list_data.csv",sep = "/"))
+
+#importing corona 3
+
+#making directory 
+
+dirr3<-paste(dirr2,"COVID19_open_line_list.csv",sep = "/")
+
+corona3<-read.csv(file = dirr3)
+
+#taking the location
+
+coronaloc<-corona3%>%select(province,longitude,latitude)
+
+#making a variable with no of cases 
+
+ncases<-coronaloc%>%group_by(longitude,latitude)%>%summarize("ncases"=n())
+
+#what is the total number of cases :
+
+sum(ncases$ncases)
+
+#merge the n cases with locations
+
+coronaloc<-left_join(coronaloc,ncases)
+
+
+coronaloc$latitude<-as.character(coronaloc$latitude)
+coronaloc$latitude<-as.numeric(coronaloc$latitude)
+
+coronaloc$longitude<-as.character(coronaloc$longitude)
+coronaloc$longitude<-as.numeric(coronaloc$longitude)
+
+#removing non locations 
+coronaloc<-coronaloc[!is.na(coronaloc$longitude),]
+
+coronaloc%>%leaflet()%>%addTiles()%>%addMarkers(data =coronaloc, lng = coronaloc$longitude,lat = coronaloc$latitude,clusterOptions = markerClusterOptions(),label = paste(coronaloc$province,ncases$ncases,sep = "\t"))
+
+######################################################
+
+world<-map_data(map = "world")
+
+names(coronaloc)<-c("province","long","lat","ncases")
+
+world<-left_join(x=world,y = coronaloc)
+
+world%>%ggplot(aes(x = long,y=lat,group=group))+geom_polygon(fill="white",col="black")+
+        geom_point(data=coronaloc,aes(x=longitude,y=latitude))
+
