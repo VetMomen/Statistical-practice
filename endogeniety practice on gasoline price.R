@@ -12,26 +12,25 @@ summary(sls1)
 
 #second stage correlation
 
-z<-predict(sls1)
+pgz<-predict(sls1)
 
-sls2<-dat%>%lm(formula = GC~z+RI)
+sls2<-dat%>%lm(formula = GC~pgz+RI)
 summary(sls2)
 
 
 #sargant test
-#get the residual from regressing Y on X1 and X2
-fit<-dat%>%lm(formula = GC~PG+RI)
 
-slsr<-fit$residuals
+esls2<-dat$GC-(as.matrix(cbind(rep(1,nrow(dat)),dat[,c("PG","RI")]))%*%coef(sls2))
 
-#regress e on all instruments
-sarg<-dat%>%lm(formula = slsr~RI+RPN+RPT+RPU)
-summary(sarg)
-R2<-0.1185
+sargfit<-dat%>%lm(formula = esls2~RI+RPN+RPT+RPU)%>%summary()
+
+R2<-0.1042
 
 qc<-30*R2
 
 pchisq(q = qc,df = 2)
 
 #the endogeniety is valid 
+
+
 

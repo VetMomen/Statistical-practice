@@ -1,0 +1,75 @@
+#assignment of week 4
+
+library(tidyverse);library(readxl);library(lmtest)
+dir<-"/home/debian/Statistical-practice/data sets/_46d7b6e393ed4cd5a42ba1ec49adede2_TestExer4_Wage-round1.xls"
+dat<-read_xls(dir)
+
+#Building the inetial required model
+
+fit1<-dat%>%lm(formula = logw~educ+exper+I(exper^2)+smsa+south)
+summary(fit1)
+
+#run first stage regression of education
+
+educsls1<-dat%>%lm(formula = educ~exper+I(exper^2)+smsa+south+age+I(age^2)+nearc+daded+momed)
+
+#run second stage regression of education
+
+educsls2<-dat%>%lm(formula = logw~predict(educsls1)+exper+I(exper^2)+smsa+south)
+summary(educsls2)
+
+#run sargant test
+newdat<-as.matrix(cbind(rep(1,nrow(dat)),dat[,c("educ","exper")],dat$exper^2,dat[,c("smsa","south")]))
+                  
+elsls2<-dat$logw-(newdat%*%coef(educsls2))
+
+#regress esls2 on first stage
+
+sargfit<-dat%>%lm(formula = elsls2~exper+I(exper^2)+smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sargfit)
+
+nR2<-nrow(dat)*0.005039
+
+m<-length(coef(educsls1))
+k<-length(coef(fit1))
+df<-m-k
+
+
+
+nR2>qchisq(p = .95,df = df)# coef in sls1 are good instruments 
+
+#model with three endogenous variables , educ , exper , exper^2
+
+sls1_educ<-dat%>%lm(formula = educ~smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sls1_educ)
+
+sls1_exper<-dat%>%lm(formula = exper~smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sls1_exper)
+
+sls1_exper2<-dat%>%lm(formula = I(exper^2)~smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sls1_exper2)
+
+sls2<-dat%>%lm(formula = logw~predict(sls1_educ)+predict(sls1_exper)+predict(sls1_exper2)+smsa+south)
+summary(sls2)
+
+esls<-dat$logw-(newdat%*%coef(sls2))
+
+sergeduc<-dat%>%lm(formula = esls~smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sergeduc)
+nR2<-nrow(dat)*0.00123
+df<-length(coef(sls1_educ))-length(coef(sls2))
+nR2>qchisq(p = .95,df = df) #not reject H0 : valid instruments
+
+
+sergexper<-dat%>%lm(formula = esls~smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sergexper)
+nR2<-nrow(dat)*0.00123
+df<-length(coef(sls1_exper))-length(coef(sls2))
+nR2>qchisq(p = .95,df = df) #not reject H0 : valid instruments
+
+
+sergexper2<-dat%>%lm(formula = esls~smsa+south+age+I(age^2)+nearc+daded+momed)
+summary(sergexper2)
+nR2<-nrow(dat)*0.00123
+df<-length(coef(sls1_exper2))-length(coef(sls2))
+nR2>qchisq(p = .95,df = df) #not reject H0 : valid instruments
