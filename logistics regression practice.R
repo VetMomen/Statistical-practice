@@ -51,6 +51,15 @@ df<-5-3
 
 LR>=qchisq(p = .99,df = df) #Reject H0
 
+resp<-predict(logfit,type = "response")
 
+hit<-list()
+prop<-seq(.01,.99,.01)
+for (i in 1:length(prop)){
+        predicted<-ifelse(resp>prop[i],1,0)
+        mat<-table(predicted,dat$response)%>%prop.table()%>%data.frame()
+        hit[[i*10]]<-mat[c(1,4),]%>%select(Freq)%>%sum()
+}
 
+#cut off is .5 and perfect
 
