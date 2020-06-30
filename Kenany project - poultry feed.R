@@ -1,3 +1,4 @@
+
 library(rvest);library(tidyverse);library(lubridate)
 
 
@@ -30,13 +31,13 @@ tablenode<-'//*[@id="keywords"]'
 #prepairing the urls
 
 day2<-list()
-for(i in 674:999){
+for(i in 837:999){
         day2[[i]]<-read_html(urls2[i,2])%>%html_node(xpath = tablenode)%>%html_table()
 }
 
 Pfeed_price2<-bind_rows(day2)
 
-saveRDS(object = Pfeed_price2,"/home/debian/Statistical-practice/data sets/poultry feed price18.rds")
+saveRDS(object = Pfeed_price2,"/home/debian/Statistical-practice/data sets/poultry feed price26.rds")
 
 ################################################################################################
 #Getting the price of Beef

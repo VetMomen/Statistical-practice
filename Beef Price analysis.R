@@ -72,7 +72,7 @@ sapply(dat2,function(x){
 
 naid<-which(is.na(dat2$B_Balady_200))
 
-dat2[naid,]%>%View #NA is systematic at 2017 - 2018 , can't impute it 
+dat2[naid,] #NA is systematic at 2017 - 2018 , can't impute it 
 #i will exclude it temporarily 
 
 
@@ -89,21 +89,21 @@ dat2%>%ggplot(aes(x=Date,y=logCMIXED400))+geom_line()+geom_smooth()
 
 #best lag auto correlation
 logCMIXED400<-dat2$logCMIXED400
-ac<-acf(x = na.omit(logCMIXED400),plot = T,type = "partial") #lag 1,2,7
+ac<-acf(x = na.omit(logCMIXED400),plot = T,type = "partial",lag.max = 120) #lag 1,2,7
 which(abs(ac$acf)>=(2/sqrt(nrow(dat2))))
 #testing stationarity
 
-adf.test(x = logCMIXED400,nlag = 8) #non stationary
+adf.test(x = logCMIXED400,nlag = 120) #non stationary
 
 #getting first difference 
 
 DlogCMIXED400<-logCMIXED400-lag(logCMIXED400,1)
 
-ac2<-acf(x = na.omit(DlogCMIXED400),plot = T,type = "partial")
+ac2<-acf(x = na.omit(DlogCMIXED400),plot = T,type = "partial",lag.max = 120)
 
 which(abs(ac2$acf)>=(2/sqrt(nrow(dat2))))# 1,6
 
-adf.test(x = DlogCMIXED400) #stationary
+adf.test(x = DlogCMIXED400,nlag = 120) #stationary
 
 #adding the variables
 
@@ -144,27 +144,30 @@ ac3$lag[which(abs(ac3$acf)>=(2/sqrt(nrow(dat2))))]
 #adding the lead and lag variables
 
 dat2<-dat2%>%mutate(DlogCMIXED300_1=lag(DlogCMIXED300,1),
-                    DlogCMIXED300_23=lag(DlogCMIXED300,23),
                     DlogCMIXED300_1L=lead(DlogCMIXED300,1))
+dat2$DlogCMIXED300_23<-lag(dat2$DlogCMIXED300,23)
 summary(dat2)
 
 #fitting the new vaiable 
 
 fit3<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_1+DlogCMIXED400_6+DlogCMIXED300_1+DlogCMIXED300_1L+DlogCMIXED300_23+DlogCMIXED300)
-summary(fit3)
+summary(fit3)# remove DlogCMIXED400_1
 
-fit4<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_1+DlogCMIXED300_1+DlogCMIXED300_1L+DlogCMIXED300_23+DlogCMIXED300)
-summary(fit4)
+fit4<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_6+DlogCMIXED300_1+DlogCMIXED300_1L+DlogCMIXED300_23+DlogCMIXED300)
+summary(fit4)# removing DlogCMIXED400_6
 
-fit5<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_1+DlogCMIXED300_1L+DlogCMIXED300_23+DlogCMIXED300)
-summary(fit5)
+fit5<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_6+DlogCMIXED300_1L+DlogCMIXED300_23+DlogCMIXED300)
+summary(fit5)#removing DlogCMIXED400_1
 
-fit6<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED300_1L+DlogCMIXED300_23+DlogCMIXED300)
-summary(fit6)
+fit6<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_6+DlogCMIXED300_23+DlogCMIXED300)
+summary(fit6)# removing DlogCMIXED300_1L
 
-fit7<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED300_23+DlogCMIXED300)
-summary(fit7)
-#fit 7 is good
+fit7<-dat2%>%lm(formula = DlogCMIXED400~DlogCMIXED400_6+DlogCMIXED300)
+summary(fit7) #removing intercept
+
+fit8<-dat2%>%lm(formula = DlogCMIXED400~-1+DlogCMIXED400_6+DlogCMIXED300)
+summary(fit8)
+#fit 8 is good
 
 #Looking on weight 250
 
@@ -174,4 +177,94 @@ dat2<-dat2%>%mutate(logCMIXED250=log(C_Mixed_Balady_250))
 
 adf.test(dat2$logCMIXED250)#not stationary
 
-dat2<-dat2%>%mutate(DlogCMIXED250=logCMIXED250-lag(250))
+dat2<-dat2%>%mutate(DlogCMIXED250=logCMIXED250-lag(logCMIXED250))
+
+#stationarity again
+
+adf.test(dat2$DlogCMIXED250)#good
+
+#guissing the bes lag
+
+ac3<-ccf(y = na.omit(dat2$DlogCMIXED400),x=na.omit(dat2$DlogCMIXED250),type = "correlation",plot = T)
+
+ac3$lag[which(abs(ac3$acf)>=(2/sqrt(nrow(dat2))))] #this say that 400 has a predictive power on 250 and not Vs
+
+#what about 200
+
+#adding log c_mixed_200
+
+dat2<-dat2%>%mutate(logCMIXED200=log(C_Mixed_Balady_200))
+
+adf.test(dat2$logCMIXED200)#not stationary
+
+dat2<-dat2%>%mutate(DlogCMIXED200=logCMIXED200-lag(logCMIXED200))
+
+#stationarity again
+
+adf.test(dat2$DlogCMIXED200)#good
+
+#guissing the bes lag
+
+ac3<-ccf(y = na.omit(dat2$DlogCMIXED400),x=na.omit(dat2$DlogCMIXED200),type = "correlation",plot = T)
+
+ac3$lag[which(abs(ac3$acf)>=(2/sqrt(nrow(dat2))))] #400 has a predictive power on 200 not the opposit
+
+
+#back to fit8
+#test for linearity
+
+resettest(fit8)#need non linear term
+
+fit9<-dat2%>%lm(formula = DlogCMIXED400~-1+DlogCMIXED400_6*DlogCMIXED300+I(DlogCMIXED400_6^2)*I(DlogCMIXED300^2))
+summary(fit9) #remove DlogCMIXED400_6^2
+
+fit10<-dat2%>%lm(formula = DlogCMIXED400~-1+DlogCMIXED400_6*DlogCMIXED300+I(DlogCMIXED400_6^2*DlogCMIXED300^2)+I(DlogCMIXED300^2))
+summary(fit10)
+
+fit11<-dat2%>%lm(formula = DlogCMIXED400~-1+DlogCMIXED300+I(DlogCMIXED400_6^2*DlogCMIXED300^2)+I(DlogCMIXED300^2)+I(DlogCMIXED400_6*DlogCMIXED300))
+summary(fit11)
+
+
+#Now i will try adding imported animal 
+
+#chow forcast test for reliability
+
+#split
+
+dat2_1<-dat2%>%filter(Date<"2018-12-30")
+dat2_2<-dat2%>%filter(Date>="2018-12-30")
+
+#Fitting the split
+fit11_1<-dat2_1%>%lm(formula = DlogCMIXED400~-1+DlogCMIXED300+I(DlogCMIXED400_6^2*DlogCMIXED300^2)+I(DlogCMIXED300^2)+I(DlogCMIXED400_6*DlogCMIXED300))
+fit11_2<-dat2_2%>%lm(formula = DlogCMIXED400~-1+DlogCMIXED300+I(DlogCMIXED400_6^2*DlogCMIXED300^2)+I(DlogCMIXED300^2)+I(DlogCMIXED400_6*DlogCMIXED300))
+
+#getting residuals
+eu1<-as.matrix(fit11_1$residuals)
+eu2<-as.matrix(fit11_2$residuals)
+er<-as.matrix(fit11$residuals)
+
+#getting SS
+s0<-t(er)%*%er
+s1<-(t(eu1)%*%eu1)
+s2<-(t(eu2)%*%eu2)
+
+#df calculation
+k<-length(coef(fit11))
+n<-nrow(dat2)
+n1<-nrow(dat2_1)
+n2<-nrow(dat2_2)
+
+f_forcast<-((s0-s1)/n2)/(s1/(n1-k))
+1-pf(q = f_forcast,df1 = n2,df2 = (n1-k))
+
+
+f_break<-((s0-s1-s2)/k)/((s1+s2)/(n-k))
+1-pf(q = f_break,df1 = k,df2 = (n-k))
+
+#Coefs are reliable and constant 
+
+#Uncorrelated errors
+
+ace<-acf(x = fit11$residuals,type = "correlation")
+ace$lag[which(abs(ace$acf)>=(2/sqrt(nrow(dat2))))] #uncorrelated error 
+

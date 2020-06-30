@@ -2,7 +2,7 @@
 
 #loading lobraries
 
-library(tidyverse);library(mice);library(car);library(pROC)
+library(tidyverse);library(mice);library(car);library(pROC);library(MASS)
 
 #reading the directory
 
@@ -202,7 +202,7 @@ residout<-which(abs(ri)>=2.5)
 
 train2<-train[-residout,]%>%na.omit()#removing outliers
 
-fit1<-train2%>%glm(formula = formula,family = "binomial")
+fit1<-glm(formula = formula,family = "binomial",data = train2)
 summary(fit1)
 
 par(mfrow=c(2,2))
@@ -211,6 +211,8 @@ plot(fit1) #we have a problem in normality
 sapply(train2[,-c(1,2,3)],function(x){
         plot(x=x,y=rstudent(fit1),main = paste0(colnames(x)))
 }) # here we can see that the relationship between each predictor and y is linear and the only problem is the presence of univariate outliers 
+
+
 
 
 #Now i will evaluate the predictive power of the model
