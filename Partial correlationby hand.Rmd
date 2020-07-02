@@ -1,0 +1,52 @@
+---
+title: "Partial Correlation By Hand in R"
+author: "Mo'men Mohamed"
+date: "7/2/2020"
+output: html_document
+---
+
+## This Tutorial to explain how to do partial correlation using R and Matrix Algebra 
+
+#### For your advice and feedback , please feel free to contact me : [vet.m.mohamed@gmail.com](vet.m.mohamed@gmail.com)
+
+
+Usually Partial correlation used to know the correlation between two variables adjusting of other set of variables, and to do it , you just need to know the following simple function :
+
+![](/home/debian/Pictures/pcor.png)
+
+and to know how to calculate the variables which subscripted by start , you need to make a centring matrix **M** as following : ![](/home/debian/Pictures/M0.png)
+
+**I** here is an idetity matrix , and **X** is a matrix containing variables which you want to control for 
+
+**NOW** let's get in ....
+
+*You can find the data at : ****William H. Greene - Econometric Analysis, 7th Edition (2011, Prentice Hall)***
+
+
+```{load libraries}
+library(ppcor)
+library(readxl)
+```
+
+*ppcor* library is very usefull , i am going to use it to confirm my results 
+
+Next i will load the data 
+
+```{load data }
+dir<-"~\\data sets\\APPLICATION AN INVESTMENT EQUATION.xlsx"
+
+
+dat<-read_xlsx(dir)
+names(dat)<-c("Investment","Constant","Trend","GNP","Interest","Inflation")
+
+
+head(dat)
+
+```
+
+Now let's see the simple correlation 
+
+```{simple correlation}
+cor(dat[,-2])
+
+```
