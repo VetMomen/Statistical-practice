@@ -1,0 +1,33 @@
+---
+title: "test"
+author: "Mo'men Mohamed"
+date: "7/16/2020"
+output: html_document
+---
+```{r}
+
+library(psych)
+library(GPArotation)
+library(lavaan)
+library(semPlot)
+library(semTools)
+
+
+## Part 2
+
+WASIWRIT.cor<-matrix(NA, 5,5)
+WASIWRIT.cor
+
+diag(WASIWRIT.cor)<-1
+
+
+WASIWRIT.cor [lower.tri(WASIWRIT.cor)]<- c(.83, .81, .80, .70, .64, .55, .42, .52, .44, .48)
+
+
+WASIWRIT.cor[upper.tri(WASIWRIT.cor)]<-t(WASIWRIT.cor)[upper.tri(WASIWRIT.cor)]
+
+dimnames(WASIWRIT.cor)<-list(paste("WASI.",c("GLOB", "WB","SC", "EMO", "SOC"),sep=""),
+                             paste("WASI.", c("GLOB", "WB","SC", "EMO", "SOC"), sep=""))
+
+                             
+```

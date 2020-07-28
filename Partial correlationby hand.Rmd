@@ -14,7 +14,7 @@ Usually Partial correlation used to know the correlation between two variables a
 
 ![](/home/debian/Pictures/pcor.png)
 
-and to know how to calculate the variables which subscripted by start , you need to make a centring matrix **M** as following : ![](/home/debian/Pictures/M0.png)
+and to know how to calculate the variables which subscripted by start , you need to make a residual marker matrix **M** as following : ![](/home/debian/Pictures/M0.png)
 
 **I** here is an idetity matrix , and **X** is a matrix containing variables which you want to control for 
 
@@ -23,17 +23,18 @@ and to know how to calculate the variables which subscripted by start , you need
 *You can find the data at : ****William H. Greene - Econometric Analysis, 7th Edition (2011, Prentice Hall)***
 
 
-```{load libraries}
+```{r}
 library(ppcor)
 library(readxl)
+library(tidyverse)
 ```
 
 *ppcor* library is very usefull , i am going to use it to confirm my results 
 
 Next i will load the data 
 
-```{load data }
-dir<-"~\\data sets\\APPLICATION AN INVESTMENT EQUATION.xlsx"
+```{r load data}
+dir<-"./data sets/APPLICATION AN INVESTMENT EQUATION.xlsx"
 
 
 dat<-read_xlsx(dir)
@@ -46,7 +47,67 @@ head(dat)
 
 Now let's see the simple correlation 
 
-```{simple correlation}
+```{r simple correlation}
 cor(dat[,-2])
 
 ```
+
+Here we see that the correlation between *investment* and *trend* -for example- is `0.7495873` but be carefull since this correlation may become misleading due to the realy existing relationship between both variables and others in the dataset 
+
+So, i will use `ppcor` package to calculate the partial correlation 
+
+```{r}
+
+pcor(dat[,-2])$estimate
+
+```
+
+Here we can see that  the correlation between the same variables become `0.93600197` instead of `0.7495873` and it is also in the opposite direction !!
+
+**Now** i will calculate the partial corelation by hand 
+
+```{r}
+#Firstly Forming a residual marker matrix 
+
+i<-rep(1,nrow(dat))
+
+I<-diag(1,nrow = nrow(dat),ncol = nrow(dat))
+
+m0<-I-(i%*%solve(t(i)%*%i)%*%t(i))
+
+#secondly , writing a function of pr2
+
+pr2<-function(z,y){
+        return(((t(z)%*%y)^2)/((t(z)%*%(z))*(t(y)%*%(y))))
+}
+
+```
+
+in the next codes i will calculate partial correlation of :
+
+1- Investment `~` Trend 
+2- Investment `~` GNP
+3- Investment `~` inflation
+4- Investment `~` interest
+
+```{r}
+#Multiplying the centering matrix by each variable to get the variable star
+
+datstar<-sapply(dat,function(x){
+        m0%*%x
+})%>%data.frame()
+
+
+#use the oartial correlation function to get it 
+
+pr<-matrix(NA,nrow = ncol(dat),ncol = ncol(dat))
+
+for(i in 1:6){
+        for(j in 1:6){
+                pr[i,j]<-pr2(z = datstar[,i],y = datstar[,j])
+        }
+}
+
+print(pr)
+```
+

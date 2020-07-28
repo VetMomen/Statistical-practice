@@ -1,3 +1,5 @@
+library(rvest)
+
 # 1st url which will work with 
 
 url<-'https://olx.com.eg/en/properties/properties-for-sale/apartments-for-sale/alexandria/'

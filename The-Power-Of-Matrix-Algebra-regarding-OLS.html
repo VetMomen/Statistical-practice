@@ -12,7 +12,7 @@
 <meta name="author" content="Mo’men Mohamed" />
 
 
-<title>Partial Correlation By Hand in R</title>
+<title>The Power Of Matrix Algebra regarding OLS</title>
 
 <script>/*! jQuery v1.11.3 | (c) 2005, 2015 jQuery Foundation, Inc. | jquery.org/license */
 !function(a,b){"object"==typeof module&&"object"==typeof module.exports?module.exports=a.document?b(a,!0):function(a){if(!a.document)throw new Error("jQuery requires a window with a document");return b(a)}:b(a)}("undefined"!=typeof window?window:this,function(a,b){var c=[],d=c.slice,e=c.concat,f=c.push,g=c.indexOf,h={},i=h.toString,j=h.hasOwnProperty,k={},l="1.11.3",m=function(a,b){return new m.fn.init(a,b)},n=/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,o=/^-ms-/,p=/-([\da-z])/gi,q=function(a,b){return b.toUpperCase()};m.fn=m.prototype={jquery:l,constructor:m,selector:"",length:0,toArray:function(){return d.call(this)},get:function(a){return null!=a?0>a?this[a+this.length]:this[a]:d.call(this)},pushStack:function(a){var b=m.merge(this.constructor(),a);return b.prevObject=this,b.context=this.context,b},each:function(a,b){return m.each(this,a,b)},map:function(a){return this.pushStack(m.map(this,function(b,c){return a.call(b,c,b)}))},slice:function(){return this.pushStack(d.apply(this,arguments))},first:function(){return this.eq(0)},last:function(){return this.eq(-1)},eq:function(a){var b=this.length,c=+a+(0>a?b:0);return this.pushStack(c>=0&&b>c?[this[c]]:[])},end:function(){return this.prevObject||this.constructor(null)},push:f,sort:c.sort,splice:c.splice},m.extend=m.fn.extend=function(){var a,b,c,d,e,f,g=arguments[0]||{},h=1,i=arguments.length,j=!1;for("boolean"==typeof g&&(j=g,g=arguments[h]||{},h++),"object"==typeof g||m.isFunction(g)||(g={}),h===i&&(g=this,h--);i>h;h++)if(null!=(e=arguments[h]))for(d in e)a=g[d],c=e[d],g!==c&&(j&&c&&(m.isPlainObject(c)||(b=m.isArray(c)))?(b?(b=!1,f=a&&m.isArray(a)?a:[]):f=a&&m.isPlainObject(a)?a:{},g[d]=m.extend(j,f,c)):void 0!==c&&(g[d]=c));return g},m.extend({expando:"jQuery"+(l+Math.random()).replace(/\D/g,""),isReady:!0,error:function(a){throw new Error(a)},noop:function(){},isFunction:function(a){return"function"===m.type(a)},isArray:Array.isArray||function(a){return"array"===m.type(a)},isWindow:function(a){return null!=a&&a==a.window},isNumeric:function(a){return!m.isArray(a)&&a-parseFloat(a)+1>=0},isEmptyObject:function(a){var b;for(b in a)return!1;return!0},isPlainObject:function(a){var b;if(!a||"object"!==m.type(a)||a.nodeType||m.isWindow(a))return!1;try{if(a.constructor&&!j.call(a,"constructor")&&!j.call(a.constructor.prototype,"isPrototypeOf"))return!1}catch(c){return!1}if(k.ownLast)for(b in a)return j.call(a,b);for(b in a);return void 0===b||j.call(a,b)},type:function(a){return null==a?a+"":"object"==typeof a||"function"==typeof a?h[i.call(a)]||"object":typeof a},globalEval:function(b){b&&m.trim(b)&&(a.execScript||function(b){a.eval.call(a,b)})(b)},camelCase:function(a){return a.replace(o,"ms-").replace(p,q)},nodeName:function(a,b){return a.nodeName&&a.nodeName.toLowerCase()===b.toLowerCase()},each:function(a,b,c){var d,e=0,f=a.length,g=r(a);if(c){if(g){for(;f>e;e++)if(d=b.apply(a[e],c),d===!1)break}else for(e in a)if(d=b.apply(a[e],c),d===!1)break}else if(g){for(;f>e;e++)if(d=b.call(a[e],e,a[e]),d===!1)break}else for(e in a)if(d=b.call(a[e],e,a[e]),d===!1)break;return a},trim:function(a){return null==a?"":(a+"").replace(n,"")},makeArray:function(a,b){var c=b||[];return null!=a&&(r(Object(a))?m.merge(c,"string"==typeof a?[a]:a):f.call(c,a)),c},inArray:function(a,b,c){var d;if(b){if(g)return g.call(b,a,c);for(d=b.length,c=c?0>c?Math.max(0,d+c):c:0;d>c;c++)if(c in b&&b[c]===a)return c}return-1},merge:function(a,b){var c=+b.length,d=0,e=a.length;while(c>d)a[e++]=b[d++];if(c!==c)while(void 0!==b[d])a[e++]=b[d++];return a.length=e,a},grep:function(a,b,c){for(var d,e=[],f=0,g=a.length,h=!c;g>f;f++)d=!b(a[f],f),d!==h&&e.push(a[f]);return e},map:function(a,b,c){var d,f=0,g=a.length,h=r(a),i=[];if(h)for(;g>f;f++)d=b(a[f],f,c),null!=d&&i.push(d);else for(f in a)d=b(a[f],f,c),null!=d&&i.push(d);return e.apply([],i)},guid:1,proxy:function(a,b){var c,e,f;return"string"==typeof b&&(f=a[b],b=a,a=f),m.isFunction(a)?(c=d.call(arguments,2),e=function(){return a.apply(b||this,c.concat(d.call(arguments)))},e.guid=a.guid=a.guid||m.guid++,e):void 0},now:function(){return+new Date},support:k}),m.each("Boolean Number String Function Array Date RegExp Object Error".split(" "),function(a,b){h["[object "+b+"]"]=b.toLowerCase()});function r(a){var b="length"in a&&a.length,c=m.type(a);return"function"===c||m.isWindow(a)?!1:1===a.nodeType&&b?!0:"array"===c||0===b||"number"==typeof b&&b>0&&b-1 in a}var s=function(a){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u="sizzle"+1*new Date,v=a.document,w=0,x=0,y=ha(),z=ha(),A=ha(),B=function(a,b){return a===b&&(l=!0),0},C=1<<31,D={}.hasOwnProperty,E=[],F=E.pop,G=E.push,H=E.push,I=E.slice,J=function(a,b){for(var c=0,d=a.length;d>c;c++)if(a[c]===b)return c;return-1},K="checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",L="[\\x20\\t\\r\\n\\f]",M="(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",N=M.replace("w","w#"),O="\\["+L+"*("+M+")(?:"+L+"*([*^$|!~]?=)"+L+"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|("+N+"))|)"+L+"*\\]",P=":("+M+")(?:\\((('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|((?:\\\\.|[^\\\\()[\\]]|"+O+")*)|.*)\\)|)",Q=new RegExp(L+"+","g"),R=new RegExp("^"+L+"+|((?:^|[^\\\\])(?:\\\\.)*)"+L+"+$","g"),S=new RegExp("^"+L+"*,"+L+"*"),T=new RegExp("^"+L+"*([>+~]|"+L+")"+L+"*"),U=new RegExp("="+L+"*([^\\]'\"]*?)"+L+"*\\]","g"),V=new RegExp(P),W=new RegExp("^"+N+"$"),X={ID:new RegExp("^#("+M+")"),CLASS:new RegExp("^\\.("+M+")"),TAG:new RegExp("^("+M.replace("w","w*")+")"),ATTR:new RegExp("^"+O),PSEUDO:new RegExp("^"+P),CHILD:new RegExp("^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\("+L+"*(even|odd|(([+-]|)(\\d*)n|)"+L+"*(?:([+-]|)"+L+"*(\\d+)|))"+L+"*\\)|)","i"),bool:new RegExp("^(?:"+K+")$","i"),needsContext:new RegExp("^"+L+"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\("+L+"*((?:-\\d)?\\d*)"+L+"*\\)|)(?=[^-]|$)","i")},Y=/^(?:input|select|textarea|button)$/i,Z=/^h\d$/i,$=/^[^{]+\{\s*\[native \w/,_=/^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,aa=/[+~]/,ba=/'|\\/g,ca=new RegExp("\\\\([\\da-f]{1,6}"+L+"?|("+L+")|.)","ig"),da=function(a,b,c){var d="0x"+b-65536;return d!==d||c?b:0>d?String.fromCharCode(d+65536):String.fromCharCode(d>>10|55296,1023&d|56320)},ea=function(){m()};try{H.apply(E=I.call(v.childNodes),v.childNodes),E[v.childNodes.length].nodeType}catch(fa){H={apply:E.length?function(a,b){G.apply(a,I.call(b))}:function(a,b){var c=a.length,d=0;while(a[c++]=b[d++]);a.length=c-1}}}function ga(a,b,d,e){var f,h,j,k,l,o,r,s,w,x;if((b?b.ownerDocument||b:v)!==n&&m(b),b=b||n,d=d||[],k=b.nodeType,"string"!=typeof a||!a||1!==k&&9!==k&&11!==k)return d;if(!e&&p){if(11!==k&&(f=_.exec(a)))if(j=f[1]){if(9===k){if(h=b.getElementById(j),!h||!h.parentNode)return d;if(h.id===j)return d.push(h),d}else if(b.ownerDocument&&(h=b.ownerDocument.getElementById(j))&&t(b,h)&&h.id===j)return d.push(h),d}else{if(f[2])return H.apply(d,b.getElementsByTagName(a)),d;if((j=f[3])&&c.getElementsByClassName)return H.apply(d,b.getElementsByClassName(j)),d}if(c.qsa&&(!q||!q.test(a))){if(s=r=u,w=b,x=1!==k&&a,1===k&&"object"!==b.nodeName.toLowerCase()){o=g(a),(r=b.getAttribute("id"))?s=r.replace(ba,"\\$&"):b.setAttribute("id",s),s="[id='"+s+"'] ",l=o.length;while(l--)o[l]=s+ra(o[l]);w=aa.test(a)&&pa(b.parentNode)||b,x=o.join(",")}if(x)try{return H.apply(d,w.querySelectorAll(x)),d}catch(y){}finally{r||b.removeAttribute("id")}}}return i(a.replace(R,"$1"),b,d,e)}function ha(){var a=[];function b(c,e){return a.push(c+" ")>d.cacheLength&&delete b[a.shift()],b[c+" "]=e}return b}function ia(a){return a[u]=!0,a}function ja(a){var b=n.createElement("div");try{return!!a(b)}catch(c){return!1}finally{b.parentNode&&b.parentNode.removeChild(b),b=null}}function ka(a,b){var c=a.split("|"),e=a.length;while(e--)d.attrHandle[c[e]]=b}function la(a,b){var c=b&&a,d=c&&1===a.nodeType&&1===b.nodeType&&(~b.sourceIndex||C)-(~a.sourceIndex||C);if(d)return d;if(c)while(c=c.nextSibling)if(c===b)return-1;return a?1:-1}function ma(a){return function(b){var c=b.nodeName.toLowerCase();return"input"===c&&b.type===a}}function na(a){return function(b){var c=b.nodeName.toLowerCase();return("input"===c||"button"===c)&&b.type===a}}function oa(a){return ia(function(b){return b=+b,ia(function(c,d){var e,f=a([],c.length,b),g=f.length;while(g--)c[e=f[g]]&&(c[e]=!(d[e]=c[e]))})})}function pa(a){return a&&"undefined"!=typeof a.getElementsByTagName&&a}c=ga.support={},f=ga.isXML=function(a){var b=a&&(a.ownerDocument||a).documentElement;return b?"HTML"!==b.nodeName:!1},m=ga.setDocument=function(a){var b,e,g=a?a.ownerDocument||a:v;return g!==n&&9===g.nodeType&&g.documentElement?(n=g,o=g.documentElement,e=g.defaultView,e&&e!==e.top&&(e.addEventListener?e.addEventListener("unload",ea,!1):e.attachEvent&&e.attachEvent("onunload",ea)),p=!f(g),c.attributes=ja(function(a){return a.className="i",!a.getAttribute("className")}),c.getElementsByTagName=ja(function(a){return a.appendChild(g.createComment("")),!a.getElementsByTagName("*").length}),c.getElementsByClassName=$.test(g.getElementsByClassName),c.getById=ja(function(a){return o.appendChild(a).id=u,!g.getElementsByName||!g.getElementsByName(u).length}),c.getById?(d.find.ID=function(a,b){if("undefined"!=typeof b.getElementById&&p){var c=b.getElementById(a);return c&&c.parentNode?[c]:[]}},d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){return a.getAttribute("id")===b}}):(delete d.find.ID,d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){var c="undefined"!=typeof a.getAttributeNode&&a.getAttributeNode("id");return c&&c.value===b}}),d.find.TAG=c.getElementsByTagName?function(a,b){return"undefined"!=typeof b.getElementsByTagName?b.getElementsByTagName(a):c.qsa?b.querySelectorAll(a):void 0}:function(a,b){var c,d=[],e=0,f=b.getElementsByTagName(a);if("*"===a){while(c=f[e++])1===c.nodeType&&d.push(c);return d}return f},d.find.CLASS=c.getElementsByClassName&&function(a,b){return p?b.getElementsByClassName(a):void 0},r=[],q=[],(c.qsa=$.test(g.querySelectorAll))&&(ja(function(a){o.appendChild(a).innerHTML="<a id='"+u+"'></a><select id='"+u+"-\f]' msallowcapture=''><option selected=''></option></select>",a.querySelectorAll("[msallowcapture^='']").length&&q.push("[*^$]="+L+"*(?:''|\"\")"),a.querySelectorAll("[selected]").length||q.push("\\["+L+"*(?:value|"+K+")"),a.querySelectorAll("[id~="+u+"-]").length||q.push("~="),a.querySelectorAll(":checked").length||q.push(":checked"),a.querySelectorAll("a#"+u+"+*").length||q.push(".#.+[+~]")}),ja(function(a){var b=g.createElement("input");b.setAttribute("type","hidden"),a.appendChild(b).setAttribute("name","D"),a.querySelectorAll("[name=d]").length&&q.push("name"+L+"*[*^$|!~]?="),a.querySelectorAll(":enabled").length||q.push(":enabled",":disabled"),a.querySelectorAll("*,:x"),q.push(",.*:")})),(c.matchesSelector=$.test(s=o.matches||o.webkitMatchesSelector||o.mozMatchesSelector||o.oMatchesSelector||o.msMatchesSelector))&&ja(function(a){c.disconnectedMatch=s.call(a,"div"),s.call(a,"[s!='']:x"),r.push("!=",P)}),q=q.length&&new RegExp(q.join("|")),r=r.length&&new RegExp(r.join("|")),b=$.test(o.compareDocumentPosition),t=b||$.test(o.contains)?function(a,b){var c=9===a.nodeType?a.documentElement:a,d=b&&b.parentNode;return a===d||!(!d||1!==d.nodeType||!(c.contains?c.contains(d):a.compareDocumentPosition&&16&a.compareDocumentPosition(d)))}:function(a,b){if(b)while(b=b.parentNode)if(b===a)return!0;return!1},B=b?function(a,b){if(a===b)return l=!0,0;var d=!a.compareDocumentPosition-!b.compareDocumentPosition;return d?d:(d=(a.ownerDocument||a)===(b.ownerDocument||b)?a.compareDocumentPosition(b):1,1&d||!c.sortDetached&&b.compareDocumentPosition(a)===d?a===g||a.ownerDocument===v&&t(v,a)?-1:b===g||b.ownerDocument===v&&t(v,b)?1:k?J(k,a)-J(k,b):0:4&d?-1:1)}:function(a,b){if(a===b)return l=!0,0;var c,d=0,e=a.parentNode,f=b.parentNode,h=[a],i=[b];if(!e||!f)return a===g?-1:b===g?1:e?-1:f?1:k?J(k,a)-J(k,b):0;if(e===f)return la(a,b);c=a;while(c=c.parentNode)h.unshift(c);c=b;while(c=c.parentNode)i.unshift(c);while(h[d]===i[d])d++;return d?la(h[d],i[d]):h[d]===v?-1:i[d]===v?1:0},g):n},ga.matches=function(a,b){return ga(a,null,null,b)},ga.matchesSelector=function(a,b){if((a.ownerDocument||a)!==n&&m(a),b=b.replace(U,"='$1']"),!(!c.matchesSelector||!p||r&&r.test(b)||q&&q.test(b)))try{var d=s.call(a,b);if(d||c.disconnectedMatch||a.document&&11!==a.document.nodeType)return d}catch(e){}return ga(b,n,null,[a]).length>0},ga.contains=function(a,b){return(a.ownerDocument||a)!==n&&m(a),t(a,b)},ga.attr=function(a,b){(a.ownerDocument||a)!==n&&m(a);var e=d.attrHandle[b.toLowerCase()],f=e&&D.call(d.attrHandle,b.toLowerCase())?e(a,b,!p):void 0;return void 0!==f?f:c.attributes||!p?a.getAttribute(b):(f=a.getAttributeNode(b))&&f.specified?f.value:null},ga.error=function(a){throw new Error("Syntax error, unrecognized expression: "+a)},ga.uniqueSort=function(a){var b,d=[],e=0,f=0;if(l=!c.detectDuplicates,k=!c.sortStable&&a.slice(0),a.sort(B),l){while(b=a[f++])b===a[f]&&(e=d.push(f));while(e--)a.splice(d[e],1)}return k=null,a},e=ga.getText=function(a){var b,c="",d=0,f=a.nodeType;if(f){if(1===f||9===f||11===f){if("string"==typeof a.textContent)return a.textContent;for(a=a.firstChild;a;a=a.nextSibling)c+=e(a)}else if(3===f||4===f)return a.nodeValue}else while(b=a[d++])c+=e(b);return c},d=ga.selectors={cacheLength:50,createPseudo:ia,match:X,attrHandle:{},find:{},relative:{">":{dir:"parentNode",first:!0}," ":{dir:"parentNode"},"+":{dir:"previousSibling",first:!0},"~":{dir:"previousSibling"}},preFilter:{ATTR:function(a){return a[1]=a[1].replace(ca,da),a[3]=(a[3]||a[4]||a[5]||"").replace(ca,da),"~="===a[2]&&(a[3]=" "+a[3]+" "),a.slice(0,4)},CHILD:function(a){return a[1]=a[1].toLowerCase(),"nth"===a[1].slice(0,3)?(a[3]||ga.error(a[0]),a[4]=+(a[4]?a[5]+(a[6]||1):2*("even"===a[3]||"odd"===a[3])),a[5]=+(a[7]+a[8]||"odd"===a[3])):a[3]&&ga.error(a[0]),a},PSEUDO:function(a){var b,c=!a[6]&&a[2];return X.CHILD.test(a[0])?null:(a[3]?a[2]=a[4]||a[5]||"":c&&V.test(c)&&(b=g(c,!0))&&(b=c.indexOf(")",c.length-b)-c.length)&&(a[0]=a[0].slice(0,b),a[2]=c.slice(0,b)),a.slice(0,3))}},filter:{TAG:function(a){var b=a.replace(ca,da).toLowerCase();return"*"===a?function(){return!0}:function(a){return a.nodeName&&a.nodeName.toLowerCase()===b}},CLASS:function(a){var b=y[a+" "];return b||(b=new RegExp("(^|"+L+")"+a+"("+L+"|$)"))&&y(a,function(a){return b.test("string"==typeof a.className&&a.className||"undefined"!=typeof a.getAttribute&&a.getAttribute("class")||"")})},ATTR:function(a,b,c){return function(d){var e=ga.attr(d,a);return null==e?"!="===b:b?(e+="","="===b?e===c:"!="===b?e!==c:"^="===b?c&&0===e.indexOf(c):"*="===b?c&&e.indexOf(c)>-1:"$="===b?c&&e.slice(-c.length)===c:"~="===b?(" "+e.replace(Q," ")+" ").indexOf(c)>-1:"|="===b?e===c||e.slice(0,c.length+1)===c+"-":!1):!0}},CHILD:function(a,b,c,d,e){var f="nth"!==a.slice(0,3),g="last"!==a.slice(-4),h="of-type"===b;return 1===d&&0===e?function(a){return!!a.parentNode}:function(b,c,i){var j,k,l,m,n,o,p=f!==g?"nextSibling":"previousSibling",q=b.parentNode,r=h&&b.nodeName.toLowerCase(),s=!i&&!h;if(q){if(f){while(p){l=b;while(l=l[p])if(h?l.nodeName.toLowerCase()===r:1===l.nodeType)return!1;o=p="only"===a&&!o&&"nextSibling"}return!0}if(o=[g?q.firstChild:q.lastChild],g&&s){k=q[u]||(q[u]={}),j=k[a]||[],n=j[0]===w&&j[1],m=j[0]===w&&j[2],l=n&&q.childNodes[n];while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if(1===l.nodeType&&++m&&l===b){k[a]=[w,n,m];break}}else if(s&&(j=(b[u]||(b[u]={}))[a])&&j[0]===w)m=j[1];else while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if((h?l.nodeName.toLowerCase()===r:1===l.nodeType)&&++m&&(s&&((l[u]||(l[u]={}))[a]=[w,m]),l===b))break;return m-=e,m===d||m%d===0&&m/d>=0}}},PSEUDO:function(a,b){var c,e=d.pseudos[a]||d.setFilters[a.toLowerCase()]||ga.error("unsupported pseudo: "+a);return e[u]?e(b):e.length>1?(c=[a,a,"",b],d.setFilters.hasOwnProperty(a.toLowerCase())?ia(function(a,c){var d,f=e(a,b),g=f.length;while(g--)d=J(a,f[g]),a[d]=!(c[d]=f[g])}):function(a){return e(a,0,c)}):e}},pseudos:{not:ia(function(a){var b=[],c=[],d=h(a.replace(R,"$1"));return d[u]?ia(function(a,b,c,e){var f,g=d(a,null,e,[]),h=a.length;while(h--)(f=g[h])&&(a[h]=!(b[h]=f))}):function(a,e,f){return b[0]=a,d(b,null,f,c),b[0]=null,!c.pop()}}),has:ia(function(a){return function(b){return ga(a,b).length>0}}),contains:ia(function(a){return a=a.replace(ca,da),function(b){return(b.textContent||b.innerText||e(b)).indexOf(a)>-1}}),lang:ia(function(a){return W.test(a||"")||ga.error("unsupported lang: "+a),a=a.replace(ca,da).toLowerCase(),function(b){var c;do if(c=p?b.lang:b.getAttribute("xml:lang")||b.getAttribute("lang"))return c=c.toLowerCase(),c===a||0===c.indexOf(a+"-");while((b=b.parentNode)&&1===b.nodeType);return!1}}),target:function(b){var c=a.location&&a.location.hash;return c&&c.slice(1)===b.id},root:function(a){return a===o},focus:function(a){return a===n.activeElement&&(!n.hasFocus||n.hasFocus())&&!!(a.type||a.href||~a.tabIndex)},enabled:function(a){return a.disabled===!1},disabled:function(a){return a.disabled===!0},checked:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&!!a.checked||"option"===b&&!!a.selected},selected:function(a){return a.parentNode&&a.parentNode.selectedIndex,a.selected===!0},empty:function(a){for(a=a.firstChild;a;a=a.nextSibling)if(a.nodeType<6)return!1;return!0},parent:function(a){return!d.pseudos.empty(a)},header:function(a){return Z.test(a.nodeName)},input:function(a){return Y.test(a.nodeName)},button:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&"button"===a.type||"button"===b},text:function(a){var b;return"input"===a.nodeName.toLowerCase()&&"text"===a.type&&(null==(b=a.getAttribute("type"))||"text"===b.toLowerCase())},first:oa(function(){return[0]}),last:oa(function(a,b){return[b-1]}),eq:oa(function(a,b,c){return[0>c?c+b:c]}),even:oa(function(a,b){for(var c=0;b>c;c+=2)a.push(c);return a}),odd:oa(function(a,b){for(var c=1;b>c;c+=2)a.push(c);return a}),lt:oa(function(a,b,c){for(var d=0>c?c+b:c;--d>=0;)a.push(d);return a}),gt:oa(function(a,b,c){for(var d=0>c?c+b:c;++d<b;)a.push(d);return a})}},d.pseudos.nth=d.pseudos.eq;for(b in{radio:!0,checkbox:!0,file:!0,password:!0,image:!0})d.pseudos[b]=ma(b);for(b in{submit:!0,reset:!0})d.pseudos[b]=na(b);function qa(){}qa.prototype=d.filters=d.pseudos,d.setFilters=new qa,g=ga.tokenize=function(a,b){var c,e,f,g,h,i,j,k=z[a+" "];if(k)return b?0:k.slice(0);h=a,i=[],j=d.preFilter;while(h){(!c||(e=S.exec(h)))&&(e&&(h=h.slice(e[0].length)||h),i.push(f=[])),c=!1,(e=T.exec(h))&&(c=e.shift(),f.push({value:c,type:e[0].replace(R," ")}),h=h.slice(c.length));for(g in d.filter)!(e=X[g].exec(h))||j[g]&&!(e=j[g](e))||(c=e.shift(),f.push({value:c,type:g,matches:e}),h=h.slice(c.length));if(!c)break}return b?h.length:h?ga.error(a):z(a,i).slice(0)};function ra(a){for(var b=0,c=a.length,d="";c>b;b++)d+=a[b].value;return d}function sa(a,b,c){var d=b.dir,e=c&&"parentNode"===d,f=x++;return b.first?function(b,c,f){while(b=b[d])if(1===b.nodeType||e)return a(b,c,f)}:function(b,c,g){var h,i,j=[w,f];if(g){while(b=b[d])if((1===b.nodeType||e)&&a(b,c,g))return!0}else while(b=b[d])if(1===b.nodeType||e){if(i=b[u]||(b[u]={}),(h=i[d])&&h[0]===w&&h[1]===f)return j[2]=h[2];if(i[d]=j,j[2]=a(b,c,g))return!0}}}function ta(a){return a.length>1?function(b,c,d){var e=a.length;while(e--)if(!a[e](b,c,d))return!1;return!0}:a[0]}function ua(a,b,c){for(var d=0,e=b.length;e>d;d++)ga(a,b[d],c);return c}function va(a,b,c,d,e){for(var f,g=[],h=0,i=a.length,j=null!=b;i>h;h++)(f=a[h])&&(!c||c(f,d,e))&&(g.push(f),j&&b.push(h));return g}function wa(a,b,c,d,e,f){return d&&!d[u]&&(d=wa(d)),e&&!e[u]&&(e=wa(e,f)),ia(function(f,g,h,i){var j,k,l,m=[],n=[],o=g.length,p=f||ua(b||"*",h.nodeType?[h]:h,[]),q=!a||!f&&b?p:va(p,m,a,h,i),r=c?e||(f?a:o||d)?[]:g:q;if(c&&c(q,r,h,i),d){j=va(r,n),d(j,[],h,i),k=j.length;while(k--)(l=j[k])&&(r[n[k]]=!(q[n[k]]=l))}if(f){if(e||a){if(e){j=[],k=r.length;while(k--)(l=r[k])&&j.push(q[k]=l);e(null,r=[],j,i)}k=r.length;while(k--)(l=r[k])&&(j=e?J(f,l):m[k])>-1&&(f[j]=!(g[j]=l))}}else r=va(r===g?r.splice(o,r.length):r),e?e(null,g,r,i):H.apply(g,r)})}function xa(a){for(var b,c,e,f=a.length,g=d.relative[a[0].type],h=g||d.relative[" "],i=g?1:0,k=sa(function(a){return a===b},h,!0),l=sa(function(a){return J(b,a)>-1},h,!0),m=[function(a,c,d){var e=!g&&(d||c!==j)||((b=c).nodeType?k(a,c,d):l(a,c,d));return b=null,e}];f>i;i++)if(c=d.relative[a[i].type])m=[sa(ta(m),c)];else{if(c=d.filter[a[i].type].apply(null,a[i].matches),c[u]){for(e=++i;f>e;e++)if(d.relative[a[e].type])break;return wa(i>1&&ta(m),i>1&&ra(a.slice(0,i-1).concat({value:" "===a[i-2].type?"*":""})).replace(R,"$1"),c,e>i&&xa(a.slice(i,e)),f>e&&xa(a=a.slice(e)),f>e&&ra(a))}m.push(c)}return ta(m)}function ya(a,b){var c=b.length>0,e=a.length>0,f=function(f,g,h,i,k){var l,m,o,p=0,q="0",r=f&&[],s=[],t=j,u=f||e&&d.find.TAG("*",k),v=w+=null==t?1:Math.random()||.1,x=u.length;for(k&&(j=g!==n&&g);q!==x&&null!=(l=u[q]);q++){if(e&&l){m=0;while(o=a[m++])if(o(l,g,h)){i.push(l);break}k&&(w=v)}c&&((l=!o&&l)&&p--,f&&r.push(l))}if(p+=q,c&&q!==p){m=0;while(o=b[m++])o(r,s,g,h);if(f){if(p>0)while(q--)r[q]||s[q]||(s[q]=F.call(i));s=va(s)}H.apply(i,s),k&&!f&&s.length>0&&p+b.length>1&&ga.uniqueSort(i)}return k&&(w=v,j=t),r};return c?ia(f):f}return h=ga.compile=function(a,b){var c,d=[],e=[],f=A[a+" "];if(!f){b||(b=g(a)),c=b.length;while(c--)f=xa(b[c]),f[u]?d.push(f):e.push(f);f=A(a,ya(e,d)),f.selector=a}return f},i=ga.select=function(a,b,e,f){var i,j,k,l,m,n="function"==typeof a&&a,o=!f&&g(a=n.selector||a);if(e=e||[],1===o.length){if(j=o[0]=o[0].slice(0),j.length>2&&"ID"===(k=j[0]).type&&c.getById&&9===b.nodeType&&p&&d.relative[j[1].type]){if(b=(d.find.ID(k.matches[0].replace(ca,da),b)||[])[0],!b)return e;n&&(b=b.parentNode),a=a.slice(j.shift().value.length)}i=X.needsContext.test(a)?0:j.length;while(i--){if(k=j[i],d.relative[l=k.type])break;if((m=d.find[l])&&(f=m(k.matches[0].replace(ca,da),aa.test(j[0].type)&&pa(b.parentNode)||b))){if(j.splice(i,1),a=f.length&&ra(j),!a)return H.apply(e,f),e;break}}}return(n||h(a,o))(f,b,!p,e,aa.test(a)&&pa(b.parentNode)||b),e},c.sortStable=u.split("").sort(B).join("")===u,c.detectDuplicates=!!l,m(),c.sortDetached=ja(function(a){return 1&a.compareDocumentPosition(n.createElement("div"))}),ja(function(a){return a.innerHTML="<a href='#'></a>","#"===a.firstChild.getAttribute("href")})||ka("type|href|height|width",function(a,b,c){return c?void 0:a.getAttribute(b,"type"===b.toLowerCase()?1:2)}),c.attributes&&ja(function(a){return a.innerHTML="<input/>",a.firstChild.setAttribute("value",""),""===a.firstChild.getAttribute("value")})||ka("value",function(a,b,c){return c||"input"!==a.nodeName.toLowerCase()?void 0:a.defaultValue}),ja(function(a){return null==a.getAttribute("disabled")})||ka(K,function(a,b,c){var d;return c?void 0:a[b]===!0?b.toLowerCase():(d=a.getAttributeNode(b))&&d.specified?d.value:null}),ga}(a);m.find=s,m.expr=s.selectors,m.expr[":"]=m.expr.pseudos,m.unique=s.uniqueSort,m.text=s.getText,m.isXMLDoc=s.isXML,m.contains=s.contains;var t=m.expr.match.needsContext,u=/^<(\w+)\s*\/?>(?:<\/\1>|)$/,v=/^.[^:#\[\.,]*$/;function w(a,b,c){if(m.isFunction(b))return m.grep(a,function(a,d){return!!b.call(a,d,a)!==c});if(b.nodeType)return m.grep(a,function(a){return a===b!==c});if("string"==typeof b){if(v.test(b))return m.filter(b,a,c);b=m.filter(b,a)}return m.grep(a,function(a){return m.inArray(a,b)>=0!==c})}m.filter=function(a,b,c){var d=b[0];return c&&(a=":not("+a+")"),1===b.length&&1===d.nodeType?m.find.matchesSelector(d,a)?[d]:[]:m.find.matches(a,m.grep(b,function(a){return 1===a.nodeType}))},m.fn.extend({find:function(a){var b,c=[],d=this,e=d.length;if("string"!=typeof a)return this.pushStack(m(a).filter(function(){for(b=0;e>b;b++)if(m.contains(d[b],this))return!0}));for(b=0;e>b;b++)m.find(a,d[b],c);return c=this.pushStack(e>1?m.unique(c):c),c.selector=this.selector?this.selector+" "+a:a,c},filter:function(a){return this.pushStack(w(this,a||[],!1))},not:function(a){return this.pushStack(w(this,a||[],!0))},is:function(a){return!!w(this,"string"==typeof a&&t.test(a)?m(a):a||[],!1).length}});var x,y=a.document,z=/^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,A=m.fn.init=function(a,b){var c,d;if(!a)return this;if("string"==typeof a){if(c="<"===a.charAt(0)&&">"===a.charAt(a.length-1)&&a.length>=3?[null,a,null]:z.exec(a),!c||!c[1]&&b)return!b||b.jquery?(b||x).find(a):this.constructor(b).find(a);if(c[1]){if(b=b instanceof m?b[0]:b,m.merge(this,m.parseHTML(c[1],b&&b.nodeType?b.ownerDocument||b:y,!0)),u.test(c[1])&&m.isPlainObject(b))for(c in b)m.isFunction(this[c])?this[c](b[c]):this.attr(c,b[c]);return this}if(d=y.getElementById(c[2]),d&&d.parentNode){if(d.id!==c[2])return x.find(a);this.length=1,this[0]=d}return this.context=y,this.selector=a,this}return a.nodeType?(this.context=this[0]=a,this.length=1,this):m.isFunction(a)?"undefined"!=typeof x.ready?x.ready(a):a(m):(void 0!==a.selector&&(this.selector=a.selector,this.context=a.context),m.makeArray(a,this))};A.prototype=m.fn,x=m(y);var B=/^(?:parents|prev(?:Until|All))/,C={children:!0,contents:!0,next:!0,prev:!0};m.extend({dir:function(a,b,c){var d=[],e=a[b];while(e&&9!==e.nodeType&&(void 0===c||1!==e.nodeType||!m(e).is(c)))1===e.nodeType&&d.push(e),e=e[b];return d},sibling:function(a,b){for(var c=[];a;a=a.nextSibling)1===a.nodeType&&a!==b&&c.push(a);return c}}),m.fn.extend({has:function(a){var b,c=m(a,this),d=c.length;return this.filter(function(){for(b=0;d>b;b++)if(m.contains(this,c[b]))return!0})},closest:function(a,b){for(var c,d=0,e=this.length,f=[],g=t.test(a)||"string"!=typeof a?m(a,b||this.context):0;e>d;d++)for(c=this[d];c&&c!==b;c=c.parentNode)if(c.nodeType<11&&(g?g.index(c)>-1:1===c.nodeType&&m.find.matchesSelector(c,a))){f.push(c);break}return this.pushStack(f.length>1?m.unique(f):f)},index:function(a){return a?"string"==typeof a?m.inArray(this[0],m(a)):m.inArray(a.jquery?a[0]:a,this):this[0]&&this[0].parentNode?this.first().prevAll().length:-1},add:function(a,b){return this.pushStack(m.unique(m.merge(this.get(),m(a,b))))},addBack:function(a){return this.add(null==a?this.prevObject:this.prevObject.filter(a))}});function D(a,b){do a=a[b];while(a&&1!==a.nodeType);return a}m.each({parent:function(a){var b=a.parentNode;return b&&11!==b.nodeType?b:null},parents:function(a){return m.dir(a,"parentNode")},parentsUntil:function(a,b,c){return m.dir(a,"parentNode",c)},next:function(a){return D(a,"nextSibling")},prev:function(a){return D(a,"previousSibling")},nextAll:function(a){return m.dir(a,"nextSibling")},prevAll:function(a){return m.dir(a,"previousSibling")},nextUntil:function(a,b,c){return m.dir(a,"nextSibling",c)},prevUntil:function(a,b,c){return m.dir(a,"previousSibling",c)},siblings:function(a){return m.sibling((a.parentNode||{}).firstChild,a)},children:function(a){return m.sibling(a.firstChild)},contents:function(a){return m.nodeName(a,"iframe")?a.contentDocument||a.contentWindow.document:m.merge([],a.childNodes)}},function(a,b){m.fn[a]=function(c,d){var e=m.map(this,b,c);return"Until"!==a.slice(-5)&&(d=c),d&&"string"==typeof d&&(e=m.filter(d,e)),this.length>1&&(C[a]||(e=m.unique(e)),B.test(a)&&(e=e.reverse())),this.pushStack(e)}});var E=/\S+/g,F={};function G(a){var b=F[a]={};return m.each(a.match(E)||[],function(a,c){b[c]=!0}),b}m.Callbacks=function(a){a="string"==typeof a?F[a]||G(a):m.extend({},a);var b,c,d,e,f,g,h=[],i=!a.once&&[],j=function(l){for(c=a.memory&&l,d=!0,f=g||0,g=0,e=h.length,b=!0;h&&e>f;f++)if(h[f].apply(l[0],l[1])===!1&&a.stopOnFalse){c=!1;break}b=!1,h&&(i?i.length&&j(i.shift()):c?h=[]:k.disable())},k={add:function(){if(h){var d=h.length;!function f(b){m.each(b,function(b,c){var d=m.type(c);"function"===d?a.unique&&k.has(c)||h.push(c):c&&c.length&&"string"!==d&&f(c)})}(arguments),b?e=h.length:c&&(g=d,j(c))}return this},remove:function(){return h&&m.each(arguments,function(a,c){var d;while((d=m.inArray(c,h,d))>-1)h.splice(d,1),b&&(e>=d&&e--,f>=d&&f--)}),this},has:function(a){return a?m.inArray(a,h)>-1:!(!h||!h.length)},empty:function(){return h=[],e=0,this},disable:function(){return h=i=c=void 0,this},disabled:function(){return!h},lock:function(){return i=void 0,c||k.disable(),this},locked:function(){return!i},fireWith:function(a,c){return!h||d&&!i||(c=c||[],c=[a,c.slice?c.slice():c],b?i.push(c):j(c)),this},fire:function(){return k.fireWith(this,arguments),this},fired:function(){return!!d}};return k},m.extend({Deferred:function(a){var b=[["resolve","done",m.Callbacks("once memory"),"resolved"],["reject","fail",m.Callbacks("once memory"),"rejected"],["notify","progress",m.Callbacks("memory")]],c="pending",d={state:function(){return c},always:function(){return e.done(arguments).fail(arguments),this},then:function(){var a=arguments;return m.Deferred(function(c){m.each(b,function(b,f){var g=m.isFunction(a[b])&&a[b];e[f[1]](function(){var a=g&&g.apply(this,arguments);a&&m.isFunction(a.promise)?a.promise().done(c.resolve).fail(c.reject).progress(c.notify):c[f[0]+"With"](this===d?c.promise():this,g?[a]:arguments)})}),a=null}).promise()},promise:function(a){return null!=a?m.extend(a,d):d}},e={};return d.pipe=d.then,m.each(b,function(a,f){var g=f[2],h=f[3];d[f[1]]=g.add,h&&g.add(function(){c=h},b[1^a][2].disable,b[2][2].lock),e[f[0]]=function(){return e[f[0]+"With"](this===e?d:this,arguments),this},e[f[0]+"With"]=g.fireWith}),d.promise(e),a&&a.call(e,e),e},when:function(a){var b=0,c=d.call(arguments),e=c.length,f=1!==e||a&&m.isFunction(a.promise)?e:0,g=1===f?a:m.Deferred(),h=function(a,b,c){return function(e){b[a]=this,c[a]=arguments.length>1?d.call(arguments):e,c===i?g.notifyWith(b,c):--f||g.resolveWith(b,c)}},i,j,k;if(e>1)for(i=new Array(e),j=new Array(e),k=new Array(e);e>b;b++)c[b]&&m.isFunction(c[b].promise)?c[b].promise().done(h(b,k,c)).fail(g.reject).progress(h(b,j,i)):--f;return f||g.resolveWith(k,c),g.promise()}});var H;m.fn.ready=function(a){return m.ready.promise().done(a),this},m.extend({isReady:!1,readyWait:1,holdReady:function(a){a?m.readyWait++:m.ready(!0)},ready:function(a){if(a===!0?!--m.readyWait:!m.isReady){if(!y.body)return setTimeout(m.ready);m.isReady=!0,a!==!0&&--m.readyWait>0||(H.resolveWith(y,[m]),m.fn.triggerHandler&&(m(y).triggerHandler("ready"),m(y).off("ready")))}}});function I(){y.addEventListener?(y.removeEventListener("DOMContentLoaded",J,!1),a.removeEventListener("load",J,!1)):(y.detachEvent("onreadystatechange",J),a.detachEvent("onload",J))}function J(){(y.addEventListener||"load"===event.type||"complete"===y.readyState)&&(I(),m.ready())}m.ready.promise=function(b){if(!H)if(H=m.Deferred(),"complete"===y.readyState)setTimeout(m.ready);else if(y.addEventListener)y.addEventListener("DOMContentLoaded",J,!1),a.addEventListener("load",J,!1);else{y.attachEvent("onreadystatechange",J),a.attachEvent("onload",J);var c=!1;try{c=null==a.frameElement&&y.documentElement}catch(d){}c&&c.doScroll&&!function e(){if(!m.isReady){try{c.doScroll("left")}catch(a){return setTimeout(e,50)}I(),m.ready()}}()}return H.promise(b)};var K="undefined",L;for(L in m(k))break;k.ownLast="0"!==L,k.inlineBlockNeedsLayout=!1,m(function(){var a,b,c,d;c=y.getElementsByTagName("body")[0],c&&c.style&&(b=y.createElement("div"),d=y.createElement("div"),d.style.cssText="position:absolute;border:0;width:0;height:0;top:0;left:-9999px",c.appendChild(d).appendChild(b),typeof b.style.zoom!==K&&(b.style.cssText="display:inline;margin:0;border:0;padding:1px;width:1px;zoom:1",k.inlineBlockNeedsLayout=a=3===b.offsetWidth,a&&(c.style.zoom=1)),c.removeChild(d))}),function(){var a=y.createElement("div");if(null==k.deleteExpando){k.deleteExpando=!0;try{delete a.test}catch(b){k.deleteExpando=!1}}a=null}(),m.acceptData=function(a){var b=m.noData[(a.nodeName+" ").toLowerCase()],c=+a.nodeType||1;return 1!==c&&9!==c?!1:!b||b!==!0&&a.getAttribute("classid")===b};var M=/^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,N=/([A-Z])/g;function O(a,b,c){if(void 0===c&&1===a.nodeType){var d="data-"+b.replace(N,"-$1").toLowerCase();if(c=a.getAttribute(d),"string"==typeof c){try{c="true"===c?!0:"false"===c?!1:"null"===c?null:+c+""===c?+c:M.test(c)?m.parseJSON(c):c}catch(e){}m.data(a,b,c)}else c=void 0}return c}function P(a){var b;for(b in a)if(("data"!==b||!m.isEmptyObject(a[b]))&&"toJSON"!==b)return!1;
@@ -362,118 +362,624 @@ summary {
 
 
 
-<h1 class="title toc-ignore">Partial Correlation By Hand in R</h1>
+<h1 class="title toc-ignore">The Power Of Matrix Algebra regarding OLS</h1>
 <h4 class="author">Mo’men Mohamed</h4>
-<h4 class="date">7/2/2020</h4>
+<h4 class="date">7/3/2020</h4>
 
 </div>
 
 
-<div id="this-tutorial-to-explain-how-to-do-partial-correlation-using-r-and-matrix-algebra" class="section level2">
-<h2>This Tutorial to explain how to do partial correlation using R and Matrix Algebra</h2>
-<div id="for-your-advice-and-feedback-please-feel-free-to-contact-me-vet.m.mohamedgmail.com" class="section level4">
-<h4>For your advice and feedback , please feel free to contact me : <a href="vet.m.mohamed@gmail.com">vet.m.mohamed@gmail.com</a></h4>
-<p>Usually Partial correlation used to know the correlation between two variables adjusting of other set of variables, and to do it , you just need to know the following simple function :</p>
-<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPkAAABaCAIAAAD1pWeHAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAU9UlEQVR4nO2dezyU2RvAD0Zj3JUuLkVNJJfsFrJrt5sybummlKi2UlvatnXX7nb59YuI7oVkN7eiC5YuuiBKuZR7iIiECmOIwZjx/v447fxmxxivZWZo3u/HH2ee9zznPK95jDPnfc7ziCAIAjAwhABRQRuAgcEnMF/HEBYwX8cQFjBfxxAWMF/HEBYwX8cQFjBfxxAWMF/HEBYwX8cQFjBfxxAWMF/HEBYwX8cQFjBfxxAWMF/HEBYwX8cQFjBfxxAWMF/HEBZwgjYAYzSCIEhSYmJudg5eAm9lbf313LmCtmgEEMHO4GGwgSDITienLmqXnJxcVlZWe1tbcGjoEtMlgrZruGC+jsFO/M24PqRvja0tAKC5udnCzExDQ/NKbIyg7Rou2Hp9tNPT0xNxObyosIhvMxIIBOjoAABFRcVlZmbv37/n2+y8A1uvCwwEQURERAbtFhYaeiIgUE5O7lluzrhx4/hggLmlBevLcePwWlpaIzivoMA+1wXDk8ePkxIT0fS8f+8+AIAgScDhRviDKToyMjsri3sfBEFyc7K373Aa2akFAubrAiDo/Pna2lqbFSsG7dnT01NeVgYA8PT2FhUd4TfLYdOmgvyCazGxXPrEx8WZW1jOnTdvZKcWCJiv85uoiIiqqqqNDg5oOpcUF9Pp9HkGBsttbHhhzM5dP6alpmakp3O8Wl5e/iTj8Z69P/FiagGAYPCRosKieV993dHRgbJ/WGioxvQZJcXFvDOpsKBQX0e35k0Nm5xCoezYvh29qaMf7LspX/FwczM1NZWSkmJKKBQKnU7n2FlRUTE/P3/dejsdXd3+V7u6ujo7O1kl4uLicnJybW1tvb29AAACgcA60UDM0Z8zgzgj+MIFX38/ppBOp/v+9+jh/xxhjlBZUaGhqYniFkcvmK/zj+ysrMqKioOHD7EKt235obCgQHXqVCUlJTqdnp+XB+WTJk9+mp31pqo64ko0x9FKiov37Nrd0tICX8orKLi5u6+333DvbrK/nx+N1nPMz9/S2gqNYbbr1h05dPgXV5dJkydDyeEDB81IJBqt521tbVdXd25OthgON9Z9HVvD8I+fnJ2JauoUCoVVaLbE9Ep0NGyfPnmKqKYOf2KvxvT19eXm5HIZMCEuntl/s4MjU+6yb9+ZU6fRG5afl0dUUz8ZGAhfhgQFM4eFPzqztNrb29EPODrBfJ1/zJ9nMFtDk01ob7ceNpqbm/W0taFvkZYuo9Ppgw5I7+39xmg+VNGdrU3t7IRySxKpoaEBvWEUCoWopm5na4teZSyC7cPwia6urubm5kmTJrHJ/Y77w8aZU6epnVTY9vDyEhMTG3RMMRxu/YYNn8enUu8l3wMA1NfXS0vLKCkpobdNTk5OWlq6rLQMvcpYBPN1PtFQXw8AmKCoyCZXnToVAFDzpibm6hUoMTQyQh9otd5+A/MZ080bNwAA95OTLa1QLdNZkZCQ6OzspNFoQ1UcQ2C+zi/g0/gBIu0C/P0ZdAZse+33Rj/qpEmTSObmsJ317FlDQ8P9e/cs/vmQHw1iOBwAoLu7e6iKY4hRvQ+DfEFR1PLy8gCAnp6e/pcK8vOT796FbUtrK/2vvhrSyA6bNt2+dQsAgCDIxeAQUVEx5nYKk6TERJwYzsLKcqBBWslkKSkpWVnZIU09thi9n+sIgux0croee621tTUhPsHOdm1qSqqgjfr3TJgwQWG8AseAwWM+PrCBw+Fc3dxh2+XnfShHNjQynKU1C7ajIiIs/+nQFAoFAFDzpqa2tgYA0Epu7T8ChUKh0WjTpk1DOeMYZfT6ekJcPMncPPJK9LmgC8kP7svJy126eFHQRg0LQ0MjCoVCJpNZhSkPHj7PfQ7b9g4b1dTVAAD5eXlNTU3oR3bYtAk2REVFSRb/X8CUvny5wMTk9q1baupqU6dNi78Zt8DEpOr1azb1po8fAQB6+nOGfk9jidHr619eFLXDJkcAwKvycqaEwWD4+31+WiklJbVn714AQHFR8U/OzlOUprDqBvj5V1dXDzTyypUrZWRkAADzjY0VWb7+auvoJCQl5eflPXzwIPVhSlVV1Z17ycSZM9nUq15XAQA22G8c5g2OckaRr7O9nV9eFPW3Jia6enp/xScwJcl37zI/ZfsQxG6NrbGB4Sobm/eN76dMUQIA0Gi0rq4uAEBBQUEbhQIGWIQQJCVX264BAFhZW7NdkpKUlJWVxePxPbQeCQkJgqRkf/W/EhL09fX15uiNzH2OWgS8v48gPT09VCoVQZCN6zfkvXiBIAi5hczWp6+vz5JEevH8uQDsG1FSU1J0Zmm1trai7P9HWNii7xeUlZXt9/JqbGj8z6FD3xjNZzAY/XtWVVVpEolsv7qXJSW6s7VvXL9+Kynp7p07URERetralRUVrH3ILeQ52jrFRUX/+qbGCoL3dTRv580bN4b00Hs0c/rkqdMnT6Lvn/XsmbuL66aNGw8dOBD+5+W2tjaO3UpLS1nDBCAMBgM+QL1w7lxIUDCCIPX19X19fax9ftn7c3RU1NDuYWwi+DXMD1u3HvP3+yP00ru6upDgIDU19eQH91nPJXxhUdR79/3c2ND4NDMTZX8ZGRlpGelx4/C9vb0ESQIej2deCjwe8Mven9+9ewcAuHv7zoqVK9l0RUVF4QNUeQUFuOmprKzMeu4uOjJSRVXVfuMXvlKHCN7XAde3s62t7WRg4BGfo2iOZo4VfPyOvXr1irmnzoXI8Igd27evWr1GSUnpp717856/MFtiymAwAAAvS0qCzp9PSkyMuBxO7aSmpaSYD/wIaYO9/br1dmzC2KsxEydNcnV3G+btjBn4+U+EGc/EukSJuBxuYmxcVFj0+/5f3zc2erl7LPjWBPbs7e31dHNvbGhkdq549YqfBvOUzo7OQfu0t7fDRctmB4eCggIEQd69ewcvlZWVwaiv+fMMrC0sE+Ljh2oA/JokPPDc1ykUip+v77YtPyz41uQ/hw4hCPJHWJjB11/fS06GHbi8nb9570958LC2pqa2pqa8rDwyPJwZ/ipseHt6lpaWsgnjb8ZtdnBwc3F5lJYmCKPGGPzIhUTtpNpYW9W8qbl46VJjY4PvUZ/u7u4LIcFmJBJrt/1eXo6bN8+ePRu+vBgc4n/sGGsHCQmJZ7k5cCMZA2Oo8Cnvl4UZ6U119fW4uNCLIe4eHndu3/lh29aRzXYCAPD29KLROASccGTR4sU8OrCMMTrhR+xXd3f3m+rqeQYGsTFX/fz9CZKSO3f9yIuJuqhUjsFVHPmy41cx+sMPX3+em0un05ubmpx27uD43G6kOHX2DO8Gxxjr8MPXnzx+DAAYP2HCosWL+TDdSDFTfbqgTfiSeV3zhs8z8sPXM59kAgDW2q3jw1wjCP/fDAyewnNfJ5PJ5WVlEhISzOMzvGP1ihXoT9assbXd5vQlpCnEQAnPff1pZiaCIKZLl6LJyzNMzEgkGq0XZedZWrN5agzGkCguKpaRkVGfrs67KXju65mPnwAA+odq8IIfd+/mwywYI05ZaekqGxs8Hv80J1tOTo5Hs/De1588IUhKfr9wAcerb2trE+ITurqont7eAAAymex79OhRX1+49R4SFPz+fSPsKSIiss/F5cs+ECm0SBAIOBxOQkJCHCfOu1l4HvuV8TSzuPSluDjne1CdOpVAIISFXoJHzsaNG5eWkvrxwwcAAIVCuXHt2scPH5uamvLz8idMUBwNjs6fR2+jc/Z/Bxqbp0+fnvE0M+1xhqQUD7ekBR+/3t7ePos481psLHx54LffYeN1ZSU809DS0nIiIEBg9rHwtrb27OkzKDsXFhRGXA4f2fiqyPDwrGfP0PSkdnaeCAhgy6fHhe7u7vA/LxcWFA7DOg4wGIxjPj719fUjO+y/Q/C+jiDI6hUrDx04gCBIXV0d2zmG7u5un/8e7enpEZBp/+dRWtrv+39Fk3oOQZCOjo55+l8R1dQvBoeMrBnBF4Jir8Zw71PzpmbP7t0tLS3ohz1/9ixRTX3uHP0R/1XTaDR3F9eiQsGfexoVvv6b936YTDAkKPjTp09MeV9f3/Fjfs3NzYIz7TMlxcXWFpbMhImDkvIwBQbcxly5OuLG/Oi0I/3Ro4Gutre3W5JIr8qHFvy8wno5UU3dxNiY4wG/YdLW1rbKxmZIKSZ5wag4q6Gtq1NWWlZZUaGsoiwtLc2Uh4Veslm5csKECQK0DQDw6dOnPbudf/39N/QBDoUF+QCAmRoatmttR9yeXc7Oe5331NbUcrzq7eFpRiJpzhpC/mieVqoBAMjKylpYWjn9sHWgTPP8YVTk/dLW1u7s7Pwj7A+fY75M4V/xCXVv3xKJMwRoGCTA/ziCIPONjZmS3t7etrY2jp2lJCUJkpIF+fkAgN8PHhTrV9BrUN1B7eFYHQBy9/ade8nJrFny2tvb2aLc4CzNzc3wpaysLJdKNWjU0cSrrl239tSJE7cSk1auXjVoZ14h2H8rECqVqjNLi/UsQm5OrpnpUk0i0dF+Y29vb3FREfNsB5/p6OiYo61z6sQJVmH6o0dENXVtzVmrbVY42m+cP8+Amao85srVvr6+r3T1du3YyXFA7roorYqOitKaqfHh/Xs2+YZ1duvXrmOVRIaHa84gMqewJJGePX2KIMiRw4eJauoLTb6rrKjgUqkGjTpKm/c677EkkVB25gWjwtfr3r6NDA9nlcCVcVNTk4erm4erW1ho6KWLFwViW1RkJFFNne0v7VZSkvkys1YyGUGQtra2uXP0oSss/O57Go1WWVExW0Oz7u1bjgNy10VpFVt1AMjrykqimjo8/MWKl4cn01mDzp9nyk2MjXOysxEE2bN796/e3gPNNag6SoIuXCCqqcPn6AJB8Ot1Bp1+69atjY6OrEL4r1xRUdEv4PjuPXu0dXS2bt8uEPNysrIBAGx50zs+deze4yyvoAAACDp/nrkmcfNwFxcXLygo2L5jB0w23R/uuiitmj5jBgAg69kzVmF2djYAYGK/FO/btm9jtjPSM2CjldyKx+MNjYwAAG+qql3cBjxhPag6SohEYn+b+Ykg1+tPMzPLSkvfvq3bu+9nLmkC1NTVYJZDgfCurg70c6AlS03hg62GhoaIy+FQqKunB9NuzZ4922rgDOjcdVHCsToANLV/OYOZGhrzjY1h2d7cnJz6+noVFZW0tFRLK2sAAIIgh44cGT9+/EBzcVdHj4qKCgCgrExgFQ0E+bne0tJS+rLUaecOge+0cAFmX1H8Z42AiRMnwsQeJwMDmSehvPZ7w79YHV1dLl8xueuip391AI6mQhz/Tm6KIEj8zTgAwL3kZKvl1gAAERERA0MD7nNxUUcPXkICDJCjjz8I0teX29gEnjqpqqoqQBsGBbogwulBd3l5OTM546LFi42/+Qb9sMPRhfSvDiACBjR1mdmyyVM+J0ONj7vZ2dnZ8K4efX7MYapDcGI4AEB3V9eQtEYQwa/XRzlyA9cI8PPx7evrAwCIioq6e3oOadjh6EL6VwfgUs5ADIfbYG8P27U1tYHHjy81W4Z+rmGqfza4lQwAUFJRHqriSIH5+iBoaGoAAD68/8Amf5qZ+Tjj8xe11WvWwGz/qQ9TbiUlDTomGt3KiooTAYEDjcCxOsBApkLsNqxnVlaKuBw+pK8HKNWTEhPv3r4z0AgfPnwAAAiwogHm64NgaGgEAGDLz48giJ/v59w1EhIS+1xcYDsyImLy5CmAK4PqwkoYFAqlqLAQANDR0QHrULPCsTqAgZERAOB1v1ICkIkTJ5r/XYZAQ1NzpoYGdzuHpI6mesdnm+cIrKIB5uuDsGrNaikpqVevylmFSYmJL0tKYHvL1q1TlKZQO6m+R30eZ2QoKQ3i69x16XS62RJT/2PHVFRVp02bVlJcbLHM7Mb162yDcKwOoKWlZWBoUPFPU1lhlt8Y6oc6d3WU1Ttev66SV1Awtxhy3bKRgk+5kMY0vkd9Hty/n/IojblVQjJdWlVVBdsqKioioqJNHz/29PSIiIi8fFXOfGZeWVGRlJjk4ubKOtqgupTW1uvXrtfUvGmob1BVVV21ZvXcefPYTNq1Y+fHDx9u/pXAJk9NSf3RySk1/dFAu/vW5hbl5eX3U1NmzOAQfBHg5796rS3HS9zVq6urr0RFffz4URwnrqSsbLfebuo/1yp0Ov1bo/m269Z6eHkNNDivGRXxMKOcbdu3XY+NzUhPX7hoEZTcS3nIXYVCocjLy7OuQ/B4PHxUNKguHo+XlZUlEAgI0ieGw0lLs+f0ayW3Ps3MjI652l938ZLFenp6V6KjB3KpjZscr0RGsXkqjUZjMBgEAqGgoMB02VI4hcJ4BZTq4O/qHW1tbV1dXRyrd6SnPZKWkdnl7Mz11nkLtoYZnEmTJ5+9cOHPsDCU/wNRrkMG0jVdtLi8vGy7047pM2ZYL1++2cHhWkwsa58jhw977vfW1eNQ8kVERCToYkjGo3RKK+dt7J7unv774tFRUZYk8/LycjV1NSUl5SOHD1tZWMBtIjTqpS9fLl1iqqKqumjxYuvlyxUU5JcsXPi6spLZgdpJPXXixLkL5wWci1NQwQljjtirMegPJbWSyReDQ/Z7eW1x3PSb9/4hVb+BaYpfPH++dfMWOBRr9uqoiAgYd8mFkuLin5yde3t7EQQht5A9XN0OHzwIg23sbG3r6ur6qwxUvQONOvfqHQwGw8vDU1Che6xgaxi0rFtvl5Gefu7MWTQVPgZdh3ABPkvH4/HKysoAABg5A4HVAdhih/qjo6vr6uZ+9MgRNw+P+LibsHb7d999rzhxory8AseHd7DcQ2sre7kHNOqs1TvERMUAANByAACDwQg8fnzrtq0amkOIp+cVgv5jG2OgKRDQ29v7jaHRoQMHGhsaDx04kJuTa2xgOOjBOTQM6fQqlUplMBjhf16GIYpWJHMz06UcQ3C5lHtAoz6CNvMUbB+GJ8AAqbwXL86fPRd2+U9Ka+u4cXjeHpIfAAadfub06fy8fOJMooOjY//ipgAAeO5RVlZ2i6PjL25u+vr60H6U6mMFbA3DE7isQ/iMGA73i6sr9z7Mr4zKKipwwxTaj1J9rIB9rmMIC9ieI4awgPk6hrCA+TqGsID5OoawgPk6hrCA+TqGsID5OoawgPk6hrCA+TqGsID5Ooaw8D/7hfJqAXcVWQAAAABJRU5ErkJggg==" /></p>
-<p>and to know how to calculate the variables which subscripted by start , you need to make a residual marker matrix <strong>M</strong> as following : <img src="data:image/png;base64,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" /></p>
-<p><strong>I</strong> here is an idetity matrix , and <strong>X</strong> is a matrix containing variables which you want to control for</p>
-<p><strong>NOW</strong> let’s get in ….</p>
-<p><em>You can find the data at : </em><strong><em>William H. Greene - Econometric Analysis, 7th Edition (2011, Prentice Hall)</em></strong></p>
-<pre class="r"><code>library(ppcor)</code></pre>
-<pre><code>## Loading required package: MASS</code></pre>
-<pre class="r"><code>library(readxl)
-library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.1     ✓ purrr   0.3.4
-## ✓ tibble  3.0.1     ✓ dplyr   1.0.0
-## ✓ tidyr   1.1.0     ✓ stringr 1.4.0
-## ✓ readr   1.3.1     ✓ forcats 0.5.0</code></pre>
-<pre><code>## ── Conflicts ───────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()
-## x dplyr::select() masks MASS::select()</code></pre>
-<p><em>ppcor</em> library is very usefull , i am going to use it to confirm my results</p>
-<p>Next i will load the data</p>
-<pre class="r"><code>dir&lt;-&quot;./data sets/APPLICATION AN INVESTMENT EQUATION.xlsx&quot;
-
+<div id="it-is-a-pleasure-to-know-your-feedback-on-vet.m.mohamedgmail.com" class="section level3">
+<h3>It is a pleasure to know your feedback on <a href>vet.m.mohamed@gmail.com</a></h3>
+<p>I Want to Show you the power of matrix algebra in estimating regression coefficients in R and coefficient of determination R2</p>
+<p><strong>The data taken from <em>William H. Greene - Econometric Analysis, 7th Edition (2011, Prentice Hall)</em> , Ch3 application </strong></p>
+<pre class="r"><code>library(tidyverse);library(readxl);library(knitr)</code></pre>
+<p><strong>importing and prepairing the data </strong></p>
+<pre class="r"><code>dir&lt;-&quot;~/Statistical-practice/data sets/Ch3 application econometric analysis.xlsx&quot;
 
 dat&lt;-read_xlsx(dir)</code></pre>
 <pre><code>## New names:
-## * Rate -&gt; Rate...5
-## * Rate -&gt; Rate...6</code></pre>
-<pre class="r"><code>names(dat)&lt;-c(&quot;Investment&quot;,&quot;Constant&quot;,&quot;Trend&quot;,&quot;GNP&quot;,&quot;Interest&quot;,&quot;Inflation&quot;)
+## * education -&gt; education...6
+## * education -&gt; education...7</code></pre>
+<pre class="r"><code>str(dat)</code></pre>
+<pre><code>## tibble [15 × 8] (S3: tbl_df/tbl/data.frame)
+##  $ Person       : num [1:15] 1 2 3 4 5 6 7 8 9 10 ...
+##  $ Education    : num [1:15] 13 15 10 12 15 15 15 13 13 11 ...
+##  $ Wage         : num [1:15] 1.82 2.14 1.56 1.85 2.41 1.83 1.78 2.12 1.95 2.19 ...
+##  $ Experience   : num [1:15] 1 4 1 1 2 2 3 4 2 5 ...
+##  $ Ability      : chr [1:15] &quot;1&quot; &quot;1.5&quot; &quot;−0.36&quot; &quot;0.26&quot; ...
+##  $ education...6: num [1:15] 12 12 12 12 12 12 12 12 12 12 ...
+##  $ education...7: num [1:15] 12 12 12 10 12 16 12 15 12 12 ...
+##  $ Siblings     : num [1:15] 1 1 1 4 1 2 1 2 2 2 ...</code></pre>
+<pre class="r"><code>minus&lt;-which(str_detect(dat$Ability,pattern = &quot;−&quot;))
+
+dat$Ability&lt;-str_remove_all(dat$Ability,&quot;−&quot;)
+
+dat$Ability&lt;-as.numeric(dat$Ability)
+
+dat$Ability[minus]&lt;-dat$Ability[minus]*-1
+
+names(dat)&lt;-c(&quot;Person&quot;,&quot;Education&quot;,&quot;Wage&quot;,&quot;Experience&quot;,&quot;Ability&quot;,&quot;M_education&quot;,&quot;F_education&quot;,&quot;Siblings&quot;)
 
 
-head(dat)</code></pre>
-<pre><code>## # A tibble: 6 x 6
-##   Investment Constant Trend   GNP Interest Inflation
-##        &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1      0.161        1     1  1.06     5.16      4.4 
-## 2      0.172        1     2  1.09     5.87      5.15
-## 3      0.158        1     3  1.09     5.95      5.37
-## 4      0.173        1     4  1.12     4.88      4.99
-## 5      0.195        1     5  1.19     4.5       4.16
-## 6      0.217        1     6  1.25     6.44      5.75</code></pre>
-<p>Now let’s see the simple correlation</p>
-<pre class="r"><code>cor(dat[,-2])</code></pre>
-<pre><code>##            Investment     Trend       GNP  Interest Inflation
-## Investment  1.0000000 0.7495873 0.8632077 0.5871350 0.4777117
-## Trend       0.7495873 1.0000000 0.9786266 0.8042624 0.6353051
-## GNP         0.8632077 0.9786266 1.0000000 0.8039316 0.6361648
-## Interest    0.5871350 0.8042624 0.8039316 1.0000000 0.7236126
-## Inflation   0.4777117 0.6353051 0.6361648 0.7236126 1.0000000</code></pre>
-<p>Here we see that the correlation between <em>investment</em> and <em>trend</em> -for example- is <code>0.7495873</code> but be carefull since this correlation may become misleading due to the realy existing relationship between both variables and others in the dataset</p>
-<p>So, i will use <code>ppcor</code> package to calculate the partial correlation</p>
-<pre class="r"><code>pcor(dat[,-2])$estimate</code></pre>
-<pre><code>##             Investment      Trend        GNP   Interest   Inflation
-## Investment  1.00000000 -0.9360020 0.96795713 -0.5166647 -0.02205714
-## Trend      -0.93600197  1.0000000 0.98896223 -0.4474269 -0.01500660
-## GNP         0.96795713  0.9889622 1.00000000  0.5234550  0.02907075
-## Interest   -0.51666472 -0.4474269 0.52345504  1.0000000  0.37985623
-## Inflation  -0.02205714 -0.0150066 0.02907075  0.3798562  1.00000000</code></pre>
-<p>Here we can see that the correlation between the same variables become <code>0.93600197</code> instead of <code>0.7495873</code> and it is also in the opposite direction !!</p>
-<p><strong>Now</strong> i will calculate the partial corelation by hand</p>
-<pre class="r"><code>#Firstly Forming a centering matrix 
+dat%&gt;%kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Person</th>
+<th align="right">Education</th>
+<th align="right">Wage</th>
+<th align="right">Experience</th>
+<th align="right">Ability</th>
+<th align="right">M_education</th>
+<th align="right">F_education</th>
+<th align="right">Siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">13</td>
+<td align="right">1.82</td>
+<td align="right">1</td>
+<td align="right">1.00</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">15</td>
+<td align="right">2.14</td>
+<td align="right">4</td>
+<td align="right">1.50</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">10</td>
+<td align="right">1.56</td>
+<td align="right">1</td>
+<td align="right">-0.36</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">12</td>
+<td align="right">1.85</td>
+<td align="right">1</td>
+<td align="right">0.26</td>
+<td align="right">12</td>
+<td align="right">10</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">15</td>
+<td align="right">2.41</td>
+<td align="right">2</td>
+<td align="right">0.30</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">15</td>
+<td align="right">1.83</td>
+<td align="right">2</td>
+<td align="right">0.44</td>
+<td align="right">12</td>
+<td align="right">16</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">7</td>
+<td align="right">15</td>
+<td align="right">1.78</td>
+<td align="right">3</td>
+<td align="right">0.91</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">8</td>
+<td align="right">13</td>
+<td align="right">2.12</td>
+<td align="right">4</td>
+<td align="right">0.51</td>
+<td align="right">12</td>
+<td align="right">15</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">13</td>
+<td align="right">1.95</td>
+<td align="right">2</td>
+<td align="right">0.86</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">10</td>
+<td align="right">11</td>
+<td align="right">2.19</td>
+<td align="right">5</td>
+<td align="right">0.26</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">11</td>
+<td align="right">12</td>
+<td align="right">2.44</td>
+<td align="right">1</td>
+<td align="right">1.82</td>
+<td align="right">16</td>
+<td align="right">17</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">12</td>
+<td align="right">13</td>
+<td align="right">2.41</td>
+<td align="right">4</td>
+<td align="right">-1.30</td>
+<td align="right">13</td>
+<td align="right">12</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="right">13</td>
+<td align="right">12</td>
+<td align="right">2.07</td>
+<td align="right">3</td>
+<td align="right">-0.63</td>
+<td align="right">12</td>
+<td align="right">12</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="right">14</td>
+<td align="right">12</td>
+<td align="right">2.20</td>
+<td align="right">6</td>
+<td align="right">-0.36</td>
+<td align="right">10</td>
+<td align="right">12</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">15</td>
+<td align="right">12</td>
+<td align="right">2.12</td>
+<td align="right">3</td>
+<td align="right">0.28</td>
+<td align="right">10</td>
+<td align="right">12</td>
+<td align="right">3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>splitting the data </strong></p>
+<pre class="r"><code>X1&lt;-cbind(C=rep(1,nrow(dat)),dat[,c(&quot;Education&quot;,&quot;Experience&quot;,&quot;Ability&quot;)])%&gt;%as.matrix()
+X2&lt;-dat[,c(&quot;M_education&quot;,&quot;F_education&quot;,&quot;Siblings&quot;)]%&gt;%as.matrix()
+y&lt;-dat$Wage%&gt;%as.matrix()
 
-i&lt;-rep(1,nrow(dat))
+X&lt;-cbind(X1,X2)%&gt;%as.matrix()</code></pre>
+<p><strong>regressing y on X1 and estimating coef. using OLS</strong></p>
+<pre class="r"><code>coefX1&lt;-solve(t(X1)%*%X1)%*%t(X1)%*%y
+
+coefX1%&gt;%kable(col.names = &quot;coef&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">coef</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td align="right">1.6636400</td>
+</tr>
+<tr class="even">
+<td>Education</td>
+<td align="right">0.0145390</td>
+</tr>
+<tr class="odd">
+<td>Experience</td>
+<td align="right">0.0710300</td>
+</tr>
+<tr class="even">
+<td>Ability</td>
+<td align="right">0.0266154</td>
+</tr>
+</tbody>
+</table>
+<p><strong>regressing y on X and estimating coef</strong></p>
+<pre class="r"><code>coefX&lt;-solve(t(X)%*%X)%*%t(X)%*%y
+coefX%&gt;%kable(col.names = &quot;Coef&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Coef</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td align="right">0.0489963</td>
+</tr>
+<tr class="even">
+<td>Education</td>
+<td align="right">0.0258221</td>
+</tr>
+<tr class="odd">
+<td>Experience</td>
+<td align="right">0.1033912</td>
+</tr>
+<tr class="even">
+<td>Ability</td>
+<td align="right">0.0307435</td>
+</tr>
+<tr class="odd">
+<td>M_education</td>
+<td align="right">0.1016307</td>
+</tr>
+<tr class="even">
+<td>F_education</td>
+<td align="right">0.0016444</td>
+</tr>
+<tr class="odd">
+<td>Siblings</td>
+<td align="right">0.0591692</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Regressing each of X2 on X1 and get the fitted values and Coef</strong></p>
+<pre class="r"><code>#make identity matrix
 
 I&lt;-diag(1,nrow = nrow(dat),ncol = nrow(dat))
 
-m0&lt;-I-(i%*%solve(t(i)%*%i)%*%t(i))
+#make a projection matrix of X1
 
-#secondly , writing a function of pr2
+PX1&lt;-(X1%*%solve(t(X1)%*%X1)%*%t(X1))
 
-pr2&lt;-function(z,y){
-        return(((t(z)%*%y)^2)/((t(z)%*%(z))*(t(y)%*%(y))))
-}</code></pre>
-<p>in the next codes i will calculate partial correlation of :</p>
-<p>1- Investment <code>~</code> Trend 2- Investment <code>~</code> GNP 3- Investment <code>~</code> inflation 4- Investment <code>~</code> interest</p>
-<pre class="r"><code>#Multiplying the centering matrix by each variable to get the variable star
+#Make a residual matrix of X1
 
-datstar&lt;-sapply(dat,function(x){
-        m0%*%x
-})%&gt;%data.frame()
+MX1&lt;-I-(X1%*%solve(t(X1)%*%X1)%*%t(X1))
+
+#calculate Fitted Value of each Value of X2
+
+X2starfitted&lt;-PX1%*%X2
+
+X2starfitted%&gt;%kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">M_education</th>
+<th align="right">F_education</th>
+<th align="right">Siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">12.88906</td>
+<td align="right">13.22151</td>
+<td align="right">1.6868244</td>
+</tr>
+<tr class="even">
+<td align="right">12.11518</td>
+<td align="right">13.71475</td>
+<td align="right">0.9453077</td>
+</tr>
+<tr class="odd">
+<td align="right">12.45630</td>
+<td align="right">11.95435</td>
+<td align="right">3.1323313</td>
+</tr>
+<tr class="even">
+<td align="right">12.60065</td>
+<td align="right">12.54894</td>
+<td align="right">2.4432204</td>
+</tr>
+<tr class="odd">
+<td align="right">12.08366</td>
+<td align="right">12.66525</td>
+<td align="right">2.2061892</td>
+</tr>
+<tr class="even">
+<td align="right">12.15406</td>
+<td align="right">12.78743</td>
+<td align="right">2.0721015</td>
+</tr>
+<tr class="odd">
+<td align="right">12.10445</td>
+<td align="right">13.19873</td>
+<td align="right">1.5661708</td>
+</tr>
+<tr class="even">
+<td align="right">11.78476</td>
+<td align="right">12.79725</td>
+<td align="right">1.9887931</td>
+</tr>
+<tr class="odd">
+<td align="right">12.53269</td>
+<td align="right">13.10045</td>
+<td align="right">1.7651327</td>
+</tr>
+<tr class="even">
+<td align="right">11.54051</td>
+<td align="right">12.52668</td>
+<td align="right">2.2677501</td>
+</tr>
+<tr class="odd">
+<td align="right">13.38513</td>
+<td align="right">13.91037</td>
+<td align="right">0.9491009</td>
+</tr>
+<tr class="even">
+<td align="right">10.87456</td>
+<td align="right">11.21765</td>
+<td align="right">3.7223549</td>
+</tr>
+<tr class="odd">
+<td align="right">11.58117</td>
+<td align="right">11.77448</td>
+<td align="right">3.1840761</td>
+</tr>
+<tr class="even">
+<td align="right">10.85905</td>
+<td align="right">12.01349</td>
+<td align="right">2.7581405</td>
+</tr>
+<tr class="odd">
+<td align="right">12.03878</td>
+<td align="right">12.56865</td>
+<td align="right">2.3125064</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>#Calculate coef of each of X2 variables regressed on X1
+
+coefX2star&lt;-solve(t(X1)%*%X1)%*%t(X1)%*%X2
+coefX2star%&gt;%kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">M_education</th>
+<th align="right">F_education</th>
+<th align="right">Siblings</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td align="right">13.7604348</td>
+<td align="right">11.9998132</td>
+<td align="right">3.3197844</td>
+</tr>
+<tr class="even">
+<td>Education</td>
+<td align="right">-0.0837141</td>
+<td align="right">0.0267585</td>
+<td align="right">-0.0476471</td>
+</tr>
+<tr class="odd">
+<td>Experience</td>
+<td align="right">-0.2859633</td>
+<td align="right">0.0011246</td>
+<td align="right">-0.0557793</td>
+</tr>
+<tr class="even">
+<td>Ability</td>
+<td align="right">0.5028718</td>
+<td align="right">0.8727106</td>
+<td align="right">-0.9577689</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calculate R2 of y on both X1 and X2</strong></p>
+<pre class="r"><code>#Make centering matrix
+i&lt;-rep(1,nrow(dat))
+M0&lt;-I-(i%*%solve(t(i)%*%i)%*%t(i))
+
+#residual matrix Of total X
+MX&lt;-I-(X%*%solve(t(X)%*%X)%*%t(X))
+
+#total residual of y on X1 and X2
+e&lt;-MX%*%y
+
+#SSE calculation
+s&lt;-t(e)%*%e
+
+#SST calculation
+ym0y&lt;-t(y)%*%M0%*%y
+
+#R2 Calculation = 1-(SSE/SST)
+R2&lt;-1-(s/ym0y)
+
+print(R2)</code></pre>
+<pre><code>##           [,1]
+## [1,] 0.5161341</code></pre>
+<p><strong>computing R-square after removing the constant variable from X1</strong></p>
+<pre class="r"><code>X_1&lt;-X[,-1]
+
+MX_1&lt;-I-(X_1%*%solve(t(X_1)%*%X_1)%*%t(X_1)) #residual matrix
+
+e_1&lt;-MX_1%*%y #residual
+
+s_1&lt;-t(e_1)%*%e_1 #SSE
+
+R2_1&lt;-1-(s_1/ym0y) 
+
+print(R2_1)</code></pre>
+<pre><code>##           [,1]
+## [1,] 0.5159728</code></pre>
+<p><strong>computing R2 for constant term only </strong></p>
+<pre class="r"><code>#the centering matrix is the same residual matrix made by constants only 
+
+e_c&lt;-M0%*%y #residual
+s_c&lt;-t(e_c)%*%e_c #SSE
+
+R2_c&lt;-1-(s_c/ym0y) #approximately zero
+
+print(R2_c)</code></pre>
+<pre><code>##              [,1]
+## [1,] 9.992007e-16</code></pre>
+<p><strong>regressing y on X1 and X2 after partialing effect of X1 on X2 (X2start) and calculating R2</strong></p>
+<pre class="r"><code>X2star&lt;-MX1%*%X2
+Xstar&lt;-cbind(X1,X2star)
 
 
-#use the oartial correlation function to get it 
+Coef_star&lt;-solve(t(Xstar)%*%Xstar)%*%t(Xstar)%*%y
 
-pr&lt;-matrix(NA,nrow = ncol(dat),ncol = ncol(dat))
+Coef_star%&gt;%kable(col.names = &quot;Coef&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Coef</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td align="right">1.6636400</td>
+</tr>
+<tr class="even">
+<td>Education</td>
+<td align="right">0.0145390</td>
+</tr>
+<tr class="odd">
+<td>Experience</td>
+<td align="right">0.0710300</td>
+</tr>
+<tr class="even">
+<td>Ability</td>
+<td align="right">0.0266154</td>
+</tr>
+<tr class="odd">
+<td>M_education</td>
+<td align="right">0.1016307</td>
+</tr>
+<tr class="even">
+<td>F_education</td>
+<td align="right">0.0016444</td>
+</tr>
+<tr class="odd">
+<td>Siblings</td>
+<td align="right">0.0591692</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>#residual matrix for star data 
 
-for(i in 1:6){
-        for(j in 1:6){
-                pr[i,j]&lt;-pr2(z = datstar[,i],y = datstar[,j])
-        }
-}
+Mstart&lt;-I-((Xstar%*%solve(t(Xstar)%*%Xstar)%*%t(Xstar)))
 
-print(pr)</code></pre>
-<pre><code>##           [,1]       [,2]       [,3]       [,4]       [,5]       [,6]
-## [1,] 1.0000000 0.05936470 0.56188108 0.74512756 0.34472748 0.22820850
-## [2,] 0.0593647 1.00000000 0.08420882 0.08629888 0.03612149 0.02804806
-## [3,] 0.5618811 0.08420882 1.00000000 0.95770993 0.64683800 0.40361259
-## [4,] 0.7451276 0.08629888 0.95770993 1.00000000 0.64630606 0.40470562
-## [5,] 0.3447275 0.03612149 0.64683800 0.64630606 1.00000000 0.52361513
-## [6,] 0.2282085 0.02804806 0.40361259 0.40470562 0.52361513 1.00000000</code></pre>
+estar&lt;-Mstart%*%y
+
+s_star&lt;-t(estar)%*%estar
+
+R2star&lt;-1-(s_star/ym0y)
+
+R2star</code></pre>
+<pre><code>##           [,1]
+## [1,] 0.5161341</code></pre>
+<p><strong>fitting partitioned regression</strong></p>
+<pre class="r"><code>#getting Coef of regressing y on X2 partialing out X1
+coef_p&lt;-solve(t(X2)%*%MX1%*%X2)%*%(t(X2)%*%MX1%*%y)
+
+coef_p%&gt;%kable(col.names = &quot;coef&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">coef</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>M_education</td>
+<td align="right">0.1016307</td>
+</tr>
+<tr class="even">
+<td>F_education</td>
+<td align="right">0.0016444</td>
+</tr>
+<tr class="odd">
+<td>Siblings</td>
+<td align="right">0.0591692</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>#getting Coef of regressing y on X1 partialing out X2
+
+coef_P2&lt;-solve(t(X1)%*%X1)%*%t(X1)%*%(y-(X2%*%coef_p))
+
+coef_P2%&gt;%kable(col.names = &quot;coef&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">coef</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>C</td>
+<td align="right">0.0489963</td>
+</tr>
+<tr class="even">
+<td>Education</td>
+<td align="right">0.0258221</td>
+</tr>
+<tr class="odd">
+<td>Experience</td>
+<td align="right">0.1033912</td>
+</tr>
+<tr class="even">
+<td>Ability</td>
+<td align="right">0.0307435</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Putting R2 together</strong></p>
+<pre class="r"><code>#Table of R2
+
+cbind(R2,R2_1,R2_c,R2star)%&gt;%kable(col.names =c(&quot;R2&quot;,&quot;R2_1&quot;,&quot;R2_c&quot;,&quot;R2star&quot;) )</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">R2</th>
+<th align="right">R2_1</th>
+<th align="right">R2_c</th>
+<th align="right">R2star</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.5161341</td>
+<td align="right">0.5159728</td>
+<td align="right">0</td>
+<td align="right">0.5161341</td>
+</tr>
+</tbody>
+</table>
 </div>
+<div id="good-luck" class="section level2">
+<h2><strong>Good Luck</strong></h2>
 </div>
 
 
